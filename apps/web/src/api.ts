@@ -513,3 +513,30 @@ export const makeSkill = (taskId: string) =>
   request<MakeSkillResult>(`/api/tasks/${encodeURIComponent(taskId)}/make-skill`, {
     method: 'POST',
   })
+
+export interface SkillExport {
+  name: string
+  filename: string
+  content: string
+}
+
+export const exportSkill = (name: string) =>
+  request<SkillExport>(`/api/skills/${encodeURIComponent(name)}/export`)
+
+export const importSkill = (content: string) =>
+  request<Skill>('/api/skills/import', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  })
+
+/* ------------------------------------------------------------------ */
+/* Channels (Milestone 7 contract)                                     */
+/* ------------------------------------------------------------------ */
+
+export interface ChannelStatus {
+  connected: boolean
+}
+
+export const getChannels = () =>
+  request<{ channels: Record<string, ChannelStatus> }>('/api/channels')

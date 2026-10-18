@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Health, getHealth, getModels, getToken, setToken } from '../api'
+import { ChannelStatus, Health, getChannels, getHealth, getModels, getToken, setToken } from '../api'
 
 export default function Settings(): React.ReactElement {
   const [health, setHealth] = useState<Health | null>(null)
@@ -7,6 +7,8 @@ export default function Settings(): React.ReactElement {
   const [defaultModel, setDefaultModel] = useState<string>('')
   const [tokenInput, setTokenInput] = useState(getToken())
   const [saved, setSaved] = useState(false)
+  const [channels, setChannels] = useState<Record<string, ChannelStatus> | null>(null)
+  const [channelsError, setChannelsError] = useState<string | null>(null)
 
   useEffect(() => {
     getHealth()
@@ -18,6 +20,12 @@ export default function Settings(): React.ReactElement {
     getModels()
       .then((d) => setDefaultModel(d.default))
       .catch(() => setDefaultModel(''))
+    getChannels()
+      .then((d) => {
+        setChannels(d.channels)
+        setChannelsError(null)
+      })
+      .catch((e: Error) => setChannelsError(e.message))
   }, [])
 
   const saveToken = () => {
@@ -81,6 +89,42 @@ export default function Settings(): React.ReactElement {
             The gateway routes each request, fails over on rate limits, and enforces per-task
             token, cost, and time budgets. Nothing spends money without a key you configured.
           </p>
+        </section>
+
+        {/* Channels */}
+        <section className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-5">
+          <h2 className="text-sm font-medium uppercase tracking-wide text-zinc-400">Channels</h2>
+          {channelsError ? (
+            <p className="mt-3 text-sm text-red-300">
+              <span className="font-medium">Couldn't load channel status:</span> {channelsError}
+            </p>
+          ) : channels === null ? (
+            <p className="mt-3 text-sm text-zinc-500">Checking channels…</p>
+          ) : Object.keys(channels).length === 0 ? (
+            <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+              No channels configured. Set{' '}
+              <code className="rounded bg-zinc-800 px-1 font-mono text-xs">TELEGRAM_BOT_TOKEN</code>{' '}
+              on the server to chat with Nova from Telegram (optionally restrict with{' '}
+              <code className="rounded bg-zinc-800 px-1 font-mono text-xs">TELEGRAM_ALLOWED_USERS</code>).
+            </p>
+          ) : (
+            <ul className="mt-3 space-y-2">
+              {Object.entries(channels).map(([name, status]) => (
+                <li key={name} className="flex items-center gap-2 text-sm">
+                  <span
+                    className={status.connected ? 'text-emerald-400' : 'text-zinc-600'}
+                    title={status.connected ? 'connected' : 'disconnected'}
+                  >
+                    ●
+                  </span>
+                  <span className="font-mono text-zinc-200">{name}</span>
+                  <span className="text-zinc-500">
+                    {status.connected ? 'connected' : 'disconnected'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         {/* Auth token */}

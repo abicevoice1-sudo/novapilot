@@ -4,7 +4,9 @@ import {
   Skill,
   createSkill,
   deleteSkill,
+  exportSkill,
   getSkills,
+  importSkill,
   runDreaming,
 } from '../api'
 
@@ -118,6 +120,7 @@ function SkillCard({
   const [expanded, setExpanded] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const remove = async () => {
@@ -129,6 +132,27 @@ function SkillCard({
       setError(e instanceof Error ? e.message : 'Could not delete skill')
       setBusy(false)
       setConfirmDelete(false)
+    }
+  }
+
+  const exportIt = async () => {
+    setExporting(true)
+    setError(null)
+    try {
+      const exp = await exportSkill(skill.name)
+      const blob = new Blob([exp.content], { type: 'text/markdown' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = exp.filename || `${skill.name}.md`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not export skill')
+    } finally {
+      setExporting(false)
     }
   }
 
@@ -172,6 +196,9 @@ function SkillCard({
           <button onClick={() => setExpanded((v) => !v)} disabled={busy} className={btnGhost}>
             {expanded ? 'Hide' : 'View'}
           </button>
+          <button onClick={() => void exportIt()} disabled={busy || exporting} className={btnGhost}>
+            {exporting ? '…' : 'Export'}
+          </button>
           {confirmDelete ? (
             <button
               onClick={() => void remove()}
@@ -202,6 +229,10 @@ export default function Skills(): React.ReactElement {
   const [dreamBusy, setDreamBusy] = useState(false)
   const [dreamResult, setDreamResult] = useState<DreamResult | null>(null)
   const [dreamError, setDreamError] = useState<string | null>(null)
+  const [importing, setImporting] = useState(false)
+  const [importText, setImportText] = useState('')
+  const [importBusy, setImportBusy] = useState(false)
+  const [importError, setImportError] = useState<string | null>(null)
 
   const refresh = useCallback(() => {
     setLoading(true)
@@ -231,6 +262,21 @@ export default function Skills(): React.ReactElement {
     }
   }
 
+  const doImport = async () => {
+    setImportBusy(true)
+    setImportError(null)
+    try {
+      const s = await importSkill(importText)
+      setSkills((prev) => [s, ...prev.filter((x) => x.name !== s.name)])
+      setImportText('')
+      setImporting(false)
+    } catch (e) {
+      setImportError(e instanceof Error ? e.message : 'Could not import skill')
+    } finally {
+      setImportBusy(false)
+    }
+  }
+
   return (
     <div className="mx-auto flex h-full max-w-4xl flex-col px-4 py-6">
       <div className="mb-6 flex items-start justify-between gap-3">
@@ -245,6 +291,9 @@ export default function Skills(): React.ReactElement {
           <button onClick={() => void dream()} disabled={dreamBusy} className={btnGhost} title="Run dreaming consolidation now — Nova reviews recent tasks and stores lasting facts to memory">
             {dreamBusy ? 'Dreaming…' : '🌙 Run dreaming now'}
           </button>
+          <button onClick={() => { setImportError(null); setImporting(true) }} className={btnGhost}>
+            ⤓ Import skill
+          </button>
           {!creating && (
             <button onClick={() => setCreating(true)} className={btnPrimary}>
               + New skill
@@ -252,6 +301,40 @@ export default function Skills(): React.ReactElement {
           )}
         </div>
       </div>
+
+      {importing && (
+        <div className="mb-6 rounded-xl border border-zinc-700 bg-zinc-900/80 p-4">
+          <h2 className="text-sm font-medium text-zinc-200">Import skill</h2>
+          <p className="mt-1 text-xs text-zinc-500">
+            Paste the exported SKILL.md content below. It must include the name and instructions.
+          </p>
+          <textarea
+            value={importText}
+            onChange={(e) => setImportText(e.target.value)}
+            placeholder={'---\nname: weekly-flight-check\ndescription: …\n---\n\nInstructions…'}
+            disabled={importBusy}
+            rows={10}
+            className={`${inputCls} slim-scroll mt-3 resize-y font-mono`}
+          />
+          {importError && <p className="mt-2 text-sm text-red-400">{importError}</p>}
+          <div className="mt-3 flex gap-2">
+            <button
+              onClick={() => void doImport()}
+              disabled={importBusy || !importText.trim()}
+              className={btnPrimary}
+            >
+              {importBusy ? '…' : 'Import'}
+            </button>
+            <button
+              onClick={() => { setImporting(false); setImportText(''); setImportError(null) }}
+              disabled={importBusy}
+              className={btnGhost}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {dreamResult && (
         <div className="mb-4 rounded-xl border border-emerald-900/50 bg-emerald-950/40 px-4 py-3">

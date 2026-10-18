@@ -62,3 +62,49 @@ async def delete_skill(name: str):
     if not get_skill_store().delete(name):
         raise HTTPException(404, "skill not found")
     return {"deleted": name}
+
+
+@router.get("/{name}/export", dependencies=[Depends(require_auth)])
+async def export_skill(name: str):
+    """Download a skill as portable SKILL.md (share it with anyone)."""
+    store = get_skill_store()
+    skill = store.get(name)
+    if skill is None:
+        raise HTTPException(404, "skill not found")
+    real = store._path(name)  # store-owned path logic; no traversal
+    if not real.is_file():
+        raise HTTPException(404, "skill file missing")
+    return {"name": skill.name, "filename": f"{skill.name}.SKILL.md", "content": real.read_text()}
+
+
+class SkillImport(BaseModel):
+    content: str = Field(min_length=1, description="SKILL.md markdown (with YAML frontmatter)")
+
+
+@router.post("/import", dependencies=[Depends(require_auth)])
+async def import_skill(req: SkillImport):
+    """Install a skill from SKILL.md text (paste what someone shared)."""
+    import re
+
+    import yaml
+
+    text = req.content.strip()
+    if not text.startswith("---\n"):
+        raise HTTPException(400, "not a valid SKILL.md (missing YAML frontmatter)")
+    try:
+        _, front_raw, instructions = text.split("---\n", 2)
+        front = yaml.safe_load(front_raw) or {}
+        name = str(front.get("name", "")).strip()
+        if not name or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 _-]*", name):
+            raise ValueError("frontmatter needs a valid 'name'")
+        skill = get_skill_store().save(
+            Skill(
+                name=name,
+                description=str(front.get("description", "")).strip(),
+                instructions=instructions.strip(),
+                tools=list(front.get("tools") or []),
+            )
+        )
+    except ValueError as e:
+        raise HTTPException(400, f"invalid SKILL.md: {e}") from e
+    return _serialize(skill)

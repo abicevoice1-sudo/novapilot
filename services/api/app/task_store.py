@@ -83,6 +83,7 @@ class SqlTaskStore:
             "total_steps": t.total_steps,
             "error": t.error,
             "summary": t.summary,
+            "source": t.source,
             "usage": json.loads(t.usage_json or "{}"),
             "created_at": t.created_at.isoformat() if t.created_at else None,
             "updated_at": t.updated_at.isoformat() if t.updated_at else None,

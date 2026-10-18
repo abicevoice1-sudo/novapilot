@@ -34,6 +34,14 @@ class Settings(BaseSettings):
     # Security: if NOVAPILOT_TOKEN is set, /api/* requires Bearer auth.
     # Unset = open (local dev default), with a logged warning.
     novapilot_token: str = ""
+
+    # Channels (Phase C): Telegram bot. Unset = channel disabled.
+    telegram_bot_token: str = ""
+    # Comma-separated Telegram user IDs allowed to use the bot. Empty = anyone.
+    telegram_allowed_users: str = ""
+
+    # MCP servers (Phase C): JSON map of name -> {command, args}. Unset = none.
+    mcp_servers: str = ""
     secret_key: str = "change-me"
 
     log_level: str = "INFO"

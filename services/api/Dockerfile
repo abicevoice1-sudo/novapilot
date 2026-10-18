@@ -7,10 +7,12 @@ COPY packages/memory /tmp/memory
 COPY packages/browser /tmp/browser
 COPY packages/scheduler /tmp/scheduler
 COPY packages/learning /tmp/learning
+COPY packages/channels /tmp/channels
+COPY packages/mcp /tmp/mcp
 COPY services/api/pyproject.toml .
-RUN pip install --no-cache-dir /tmp/gateway /tmp/agent-core /tmp/memory /tmp/browser /tmp/scheduler /tmp/learning . \
+RUN pip install --no-cache-dir /tmp/gateway /tmp/agent-core /tmp/memory /tmp/browser /tmp/scheduler /tmp/learning /tmp/channels /tmp/mcp . \
     && playwright install chromium \
-    && rm -rf /tmp/gateway /tmp/agent-core /tmp/memory /tmp/browser /tmp/scheduler /tmp/learning
+    && rm -rf /tmp/gateway /tmp/agent-core /tmp/memory /tmp/browser /tmp/scheduler /tmp/learning /tmp/channels /tmp/mcp
 COPY services/api/app/ app/
 EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

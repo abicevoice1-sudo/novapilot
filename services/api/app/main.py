@@ -6,6 +6,7 @@ Agent tasks: LangGraph plan→execute→verify with tool calls, approval gates,
 task states, cancellation, retries, and budgets.
 """
 
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -17,6 +18,7 @@ from .config import settings
 from .db import init_db
 from .logging_config import configure_logging
 from .routers import (
+    channels,
     chat,
     conversations,
     dreaming,
@@ -45,7 +47,20 @@ async def lifespan(app: FastAPI):
     runner = get_runner_or_none()
     await runner.reconcile()  # tasks orphaned by a restart become resumable
     await start_scheduler()  # loads enabled schedules; replays missed runs
+    from .channels import get_channel_manager
+
+    channel_manager = get_channel_manager()
+    await channel_manager.start()  # Telegram etc. (no-op if unconfigured)
+    from .mcp_setup import register_mcp_servers
+
+    n_mcp = await register_mcp_servers(runner.registry)
+    if n_mcp:
+        logging.getLogger("novapilot").info("registered %d MCP tools", n_mcp)
     yield
+    from .mcp_setup import close_mcp_servers
+
+    await close_mcp_servers()
+    await channel_manager.stop()
     await stop_scheduler()
     await runner.aclose()
     await close_browser_session()
@@ -66,6 +81,7 @@ app.include_router(tasks.router)
 app.include_router(memories.router)
 app.include_router(shots.router)
 app.include_router(schedules.router)
+app.include_router(channels.router)
 app.include_router(skills.router)
 app.include_router(dreaming.router)
 

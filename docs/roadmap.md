@@ -94,6 +94,24 @@ across 5 consecutive runs (38 tests).
 fact searchable in memory → make-skill created `note-reader` SKILL.md →
 planner skill matching confirmed. 9 learning + 4 API tests green.
 
+## Phase C — Channels + MCP + skill portability ✅ (2026-10-18)
+
+- [x] `novapilot-channels`: Telegram long-polling (getMe verification,
+      unauthorized-user filtering, 4k message chunking). 5 tests (mocked API).
+- [x] Channel manager: inbound → fully-supervised task (`source:
+      "telegram:<chat_id>"`), "On it" ack, approval nudges, summary replies.
+      `GET /api/channels` status.
+- [x] `novapilot-mcp`: dependency-free MCP stdio client (initialize →
+      tools/list → tools/call). MCP tools register as `mcp_<server>_<tool>`
+      with risk=medium + requires_approval. 3 tests (fake server).
+- [x] Skill export/import: portable SKILL.md, `GET /api/skills/{name}/export`,
+      `POST /api/skills/import` (400 on garbage).
+- [x] docs/channels.md; CI + Dockerfile updated.
+
+**Acceptance:** live-verified — MCP weather server registered at boot, task
+hit the approval gate for `mcp_weather_get_weather`, approved, completed with
+"Sunny in Baltimore". Telegram→task→reply flow integration-tested.
+
 **Acceptance:** a scheduled research job runs, emails the result, survives a restart; user can pause everything with one switch.
 
 ## Milestone 7 — Integrations & multi-agent
