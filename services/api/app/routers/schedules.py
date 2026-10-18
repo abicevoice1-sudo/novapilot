@@ -18,20 +18,20 @@ router = APIRouter(prefix="/api/schedules", tags=["schedules"])
 
 class ScheduleCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
-    goal: str = Field(min_length=1, description="What the agent should do each run")
+    goal: str = Field(min_length=1, max_length=20000, description="What the agent should do each run")
     # One of: when (natural language), cron, interval_sec.
-    when: str | None = Field(default=None, description="'every morning at 8', 'every 30 minutes', ...")
+    when: str | None = Field(default=None, max_length=500, description="'every morning at 8', 'every 30 minutes', ...")
     cron: str | None = None
     interval_sec: int | None = Field(default=None, gt=0)
     preapproved_tools: list[str] = Field(
-        default_factory=list,
+        default_factory=list, max_length=50,
         description="Tools this schedule may use without asking. Empty = fully supervised.",
     )
 
 
 class ScheduleUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=200)
-    goal: str | None = Field(default=None, min_length=1)
+    goal: str | None = Field(default=None, min_length=1, max_length=20000)
     when: str | None = None
     cron: str | None = None
     interval_sec: int | None = Field(default=None, gt=0)

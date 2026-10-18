@@ -96,3 +96,16 @@ def health() -> dict:
         "milestone": 6,
         "model_default": settings.model_default,
     }
+
+
+# Serve the built web UI (Docker copies apps/web/dist to /app/static/;
+# local dev serves it if apps/web/dist exists). API routes take precedence.
+from pathlib import Path as _Path  # noqa: E402
+
+_STATIC_DIR = _Path(__file__).resolve().parent.parent / "static"
+if not _STATIC_DIR.is_dir():
+    _STATIC_DIR = _Path(__file__).resolve().parent.parent.parent / "apps" / "web" / "dist"
+if _STATIC_DIR.is_dir():
+    from fastapi.staticfiles import StaticFiles  # noqa: E402
+
+    app.mount("/", StaticFiles(directory=str(_STATIC_DIR), html=True), name="web")

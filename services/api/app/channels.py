@@ -32,7 +32,7 @@ class ChannelManager:
             }
             self.channels["telegram"] = TelegramChannel(token, allowed_users=allowed)
             log.info("telegram channel configured (allowed_users=%s)",
-                     sorted(allowed) or "anyone")
+                     sorted(allowed) or "NONE (deny-by-default)")
         if settings.gmail_address and settings.gmail_app_password:
             from actlet_gmail import GmailChannel, GmailClient
 
@@ -46,7 +46,7 @@ class ChannelManager:
             }
             self.channels["gmail"] = GmailChannel(_factory, allowed_senders=allowed_senders)
             log.info("gmail channel configured (allowed_senders=%s)",
-                     sorted(allowed_senders) or "anyone")
+                     sorted(allowed_senders) or "NONE (deny-by-default)")
         if settings.slack_bot_token and settings.slack_app_token:
             from actlet_channels import SlackChannel
 
@@ -58,7 +58,7 @@ class ChannelManager:
                 allowed_users=allowed_slack,
             )
             log.info("slack channel configured (allowed_users=%s)",
-                     sorted(allowed_slack) or "anyone")
+                     sorted(allowed_slack) or "NONE (deny-by-default)")
 
     async def start(self) -> None:
         for name, ch in self.channels.items():

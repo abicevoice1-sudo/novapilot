@@ -5,7 +5,7 @@ Three ways, cheapest first.
 ## 1. Local (free, 2 minutes)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/abicevoice1-sudo/actlet/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/hydope/actlet/master/install.sh | bash
 .venv/bin/uvicorn app.main:app --app-dir services/api
 ```
 
@@ -14,7 +14,7 @@ Ollama runs the models locally — $0, no API keys. Open http://localhost:8000.
 ## 2. Docker Compose (self-hosted server)
 
 ```bash
-cp full.env.example .env        # fill in ACTLET_TOKEN + any integrations
+cp .env.example .env        # fill in ACTLET_TOKEN + any integrations
 docker compose up -d --build
 ```
 

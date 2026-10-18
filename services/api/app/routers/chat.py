@@ -19,13 +19,13 @@ router = APIRouter()
 
 class ChatMessage(BaseModel):
     role: str = Field(pattern="^(user|assistant|system)$")
-    content: str
+    content: str = Field(max_length=20000)
 
 
 class ChatRequest(BaseModel):
-    messages: list[ChatMessage]
+    messages: list[ChatMessage] = Field(max_length=200)
     model: str | None = None
-    conversation_id: str | None = None
+    conversation_id: str | None = Field(default=None, max_length=200)
 
 
 def _sse(data: dict) -> str:
@@ -49,9 +49,13 @@ async def chat(
         session.add(conv)
         await session.flush()
 
-    for m in req.messages:
-        if m.role == "user":
-            session.add(Message(conversation_id=conv.id, role=m.role, content=m.content))
+    # Audit fix: the frontend sends full history, but only the NEWEST user
+    # message is new — earlier ones are already persisted. Persisting all of
+    # them duplicates history on every turn.
+    new_user_msgs = [m for m in req.messages if m.role == "user"]
+    if new_user_msgs:
+        session.add(Message(conversation_id=conv.id, role="user",
+                            content=new_user_msgs[-1].content))
     await session.commit()
 
     payload = [{"role": m.role, "content": m.content} for m in req.messages]

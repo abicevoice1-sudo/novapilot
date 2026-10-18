@@ -228,8 +228,11 @@ def _execute_node(registry: ToolRegistry, checkpoint_manager=None) -> Any:
                 checkpoint_manager.snapshot(task_id, step["id"])
                 await _emit(config, "checkpoint_created",
                             {"step_id": step["id"], "task_id": task_id})
-            except Exception:  # noqa: BLE001, S110 — a failed snapshot never blocks the task
-                pass
+            except Exception as e:  # noqa: BLE001 — snapshot failure is surfaced, not silent
+                # Audit fix: the UI must not imply revert is available when it isn't.
+                await _emit(config, "checkpoint_failed",
+                            {"step_id": step["id"], "task_id": task_id,
+                             "error": f"{type(e).__name__}: {e}"})
         for attempt in range(1, MAX_ATTEMPTS + 1):
             step = {**step, "status": "running", "attempts": attempt}
             await _emit(config, "tool_called", {"step": step, "attempt": attempt})

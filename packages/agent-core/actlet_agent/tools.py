@@ -148,25 +148,30 @@ class _ShellArgs(BaseModel):
     command: str = Field(description="Read-only shell command (allowlisted)")
 
 
-def _workspace() -> Path:
+def _workspace(workspace_dir: str | Path | None = None) -> Path:
+    """Canonical workspace root. Injected by the caller; never read from a
+    second env var inside tool implementations (audit fix)."""
     import os
 
-    root = Path(os.environ.get("ACTLET_WORKSPACE", "./workspace")).resolve()
+    if workspace_dir is None:
+        # Fallback for standalone use (tests, scripts): single env var.
+        workspace_dir = os.environ.get("ACTLET_WORKSPACE", "./workspace")
+    root = Path(workspace_dir).resolve()
     root.mkdir(parents=True, exist_ok=True)
     return root
 
 
-def _resolve(path: str) -> Path:
+def _resolve(path: str, workspace_dir: str | Path | None = None) -> Path:
     """Resolve a workspace-relative path; block escapes."""
-    root = _workspace()
+    root = _workspace(workspace_dir)
     target = (root / path).resolve()
     if not target.is_relative_to(root):
         raise ValueError(f"path escapes workspace: {path}")
     return target
 
 
-async def _read_file(args: _PathArgs) -> ToolResult:
-    p = _resolve(args.path)
+async def _read_file(args: _PathArgs, workspace_dir: str | Path | None = None) -> ToolResult:
+    p = _resolve(args.path, workspace_dir)
     if not p.is_file():
         return ToolResult(ok=False, output=f"not a file: {args.path}")
     text = p.read_text(encoding="utf-8", errors="replace")
@@ -177,16 +182,16 @@ async def _read_file(args: _PathArgs) -> ToolResult:
     )
 
 
-async def _list_dir(args: _PathArgs) -> ToolResult:
-    p = _resolve(args.path or ".")
+async def _list_dir(args: _PathArgs, workspace_dir: str | Path | None = None) -> ToolResult:
+    p = _resolve(args.path or ".", workspace_dir)
     if not p.is_dir():
         return ToolResult(ok=False, output=f"not a directory: {args.path}")
     names = sorted(x.name + ("/" if x.is_dir() else "") for x in p.iterdir())
     return ToolResult(ok=True, output="\n".join(names), verification=f"listed {len(names)} entries")
 
 
-async def _write_file(args: _WriteArgs) -> ToolResult:
-    p = _resolve(args.path)
+async def _write_file(args: _WriteArgs, workspace_dir: str | Path | None = None) -> ToolResult:
+    p = _resolve(args.path, workspace_dir)
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(args.content, encoding="utf-8")
     back = p.read_text(encoding="utf-8")
@@ -198,12 +203,70 @@ async def _write_file(args: _WriteArgs) -> ToolResult:
     )
 
 
+def _is_public_ip(ip: str) -> bool:
+    """True if the IP is safe for an agent to fetch (audit: SSRF fix)."""
+    import ipaddress
+
+    try:
+        addr = ipaddress.ip_address(ip)
+    except ValueError:
+        return False
+    return not (
+        addr.is_private
+        or addr.is_loopback
+        or addr.is_link_local
+        or addr.is_multicast
+        or addr.is_reserved
+        or addr.is_unspecified
+    )
+
+
+def _check_url_public(url: str) -> str | None:
+    """Return an error string if the URL resolves to a non-public IP."""
+    import socket
+    from urllib.parse import urlparse
+
+    try:
+        host = urlparse(url).hostname or ""
+    except Exception:  # noqa: BLE001
+        return "invalid URL"
+    if not host:
+        return "invalid URL"
+    try:
+        infos = socket.getaddrinfo(host, None, proto=socket.IPPROTO_TCP)
+    except OSError:
+        return f"DNS resolution failed: {host}"
+    for info in infos:
+        ip = info[4][0]
+        if not _is_public_ip(ip):
+            return f"blocked: {host} resolves to non-public IP {ip}"
+    return None
+
+
 async def _web_fetch(args: _FetchArgs) -> ToolResult:
     if not args.url.startswith(("http://", "https://")):
         return ToolResult(ok=False, output="only http(s) URLs allowed")
+    # SSRF guard: resolve and block private/link-local/loopback (audit fix).
+    # DNS runs in a thread — getaddrinfo blocks and must not stall the loop.
+    blocked = await asyncio.to_thread(_check_url_public, args.url)
+    if blocked:
+        return ToolResult(ok=False, output=blocked)
     try:
-        async with httpx.AsyncClient(timeout=20, follow_redirects=True) as client:
-            r = await client.get(args.url, headers={"User-Agent": "Actlet/0.3 (+research)"})
+        # No auto-redirects: each redirect target is re-validated (audit fix).
+        async with httpx.AsyncClient(timeout=20, follow_redirects=False) as client:
+            url = args.url
+            for _ in range(5):
+                r = await client.get(url, headers={"User-Agent": "Actlet/0.3 (+research)"})
+                if r.status_code not in (301, 302, 303, 307, 308):
+                    break
+                url = r.headers.get("location", "")
+                if not url.startswith(("http://", "https://")):
+                    return ToolResult(ok=False, output="redirect to non-http(s) URL blocked")
+                blocked = await asyncio.to_thread(_check_url_public, url)
+                if blocked:
+                    return ToolResult(ok=False, output=f"redirect {blocked}")
+            else:
+                return ToolResult(ok=False, output="too many redirects")
     except Exception as e:  # noqa: BLE001
         return ToolResult(ok=False, output=f"fetch failed: {type(e).__name__}: {e}")
     if r.status_code != 200:
@@ -223,19 +286,50 @@ async def _web_fetch(args: _FetchArgs) -> ToolResult:
     )
 
 
-async def _shell(args: _ShellArgs) -> ToolResult:
+async def _shell(args: _ShellArgs, workspace_dir: str | Path | None = None) -> ToolResult:
+    """Hardened read-only shell (audit fix).
+
+    - Executable must be in SHELL_ALLOWLIST.
+    - Every argument that looks like a path is resolved against the workspace;
+      `..` escapes and absolute paths are rejected.
+    - Subprocess gets a scrubbed environment (no API tokens/credentials).
+    - Runs in the canonical workspace dir. Output capped. Requires approval.
+    """
     parts = shlex.split(args.command)
     if not parts or parts[0] not in SHELL_ALLOWLIST:
         return ToolResult(
             ok=False,
-            output=f"command not allowlisted (M3 shell is read-only): {parts[0] if parts else ''}",
+            output=f"command not allowlisted (shell is read-only): {parts[0] if parts else ''}",
         )
+    root = _workspace(workspace_dir)
+    # Validate path-like arguments: no absolute paths, no .. escapes.
+    safe_parts: list[str] = [parts[0]]
+    for arg in parts[1:]:
+        if arg.startswith("-") or arg in {"|", ">", "<", "&&", ";"}:
+            # Flags pass through; shell metacharacters are inert under
+            # create_subprocess_exec (no shell=True), but reject them anyway.
+            if arg in {"|", ">", "<", "&&", ";"}:
+                return ToolResult(ok=False, output=f"shell metacharacter rejected: {arg}")
+            safe_parts.append(arg)
+            continue
+        # Treat as a path: must stay inside the workspace.
+        try:
+            target = (root / arg).resolve()
+            if not target.is_relative_to(root):
+                return ToolResult(ok=False, output=f"path escapes workspace: {arg}")
+        except (ValueError, OSError):
+            return ToolResult(ok=False, output=f"invalid path argument: {arg}")
+        safe_parts.append(arg)
+    # Scrubbed environment: PATH only. No tokens, no credentials leak
+    # into the child process (audit fix).
+    clean_env = {"PATH": "/usr/bin:/bin:/usr/local/bin", "HOME": str(root)}
     try:
         proc = await asyncio.create_subprocess_exec(
-            *parts,
+            *safe_parts,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT,
-            cwd=str(_workspace()),
+            cwd=str(root),
+            env=clean_env,
         )
         out, _ = await asyncio.wait_for(proc.communicate(), timeout=30)
     except TimeoutError:
@@ -287,23 +381,49 @@ def sandboxed_shell_available() -> bool:
     return DockerSandbox.available()
 
 
-def builtin_registry() -> ToolRegistry:
+def builtin_registry(workspace_dir: str | Path | None = None) -> ToolRegistry:
+    """Build the default tool registry.
+
+    workspace_dir is the ONE canonical workspace path, injected by the caller
+    (the API passes settings.workspace_dir). Tool implementations must not
+    read workspace paths from env vars themselves.
+    """
     reg = ToolRegistry()
-    reg.register(Tool("read_file", "Read a text file from the workspace", _PathArgs, _read_file))
-    reg.register(Tool("list_dir", "List a workspace directory", _PathArgs, _list_dir))
+
+    async def read_file(args: _PathArgs) -> ToolResult:
+        return await _read_file(args, workspace_dir)
+
+    async def list_dir(args: _PathArgs) -> ToolResult:
+        return await _list_dir(args, workspace_dir)
+
+    async def write_file(args: _WriteArgs) -> ToolResult:
+        return await _write_file(args, workspace_dir)
+
+    async def shell(args: _ShellArgs) -> ToolResult:
+        return await _shell(args, workspace_dir)
+
+    reg.register(Tool("read_file", "Read a text file from the workspace", _PathArgs, read_file))
+    reg.register(Tool("list_dir", "List a workspace directory", _PathArgs, list_dir))
     reg.register(
         Tool(
             "write_file",
             "Write a text file in the workspace (needs approval)",
             _WriteArgs,
-            _write_file,
+            write_file,
             risk="medium",
             requires_approval=True,
         )
     )
     reg.register(Tool("web_fetch", "Fetch a web page as text (read-only)", _FetchArgs, _web_fetch))
     reg.register(
-        Tool("shell", "Run a read-only allowlisted shell command", _ShellArgs, _shell)
+        Tool(
+            "shell",
+            "Run a read-only allowlisted shell command (workspace-scoped, needs approval)",
+            _ShellArgs,
+            shell,
+            risk="medium",
+            requires_approval=True,
+        )
     )
     if sandboxed_shell_available():
         reg.register(

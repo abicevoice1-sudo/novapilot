@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Actlet one-click installer.
-# Usage: curl -fsSL https://raw.githubusercontent.com/abicevoice1-sudo/actlet/master/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/hydope/actlet/master/install.sh | bash
 # Or locally: ./install.sh [--no-start]
 #
 # One command does everything:

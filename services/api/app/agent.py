@@ -53,7 +53,10 @@ async def close_browser_session() -> None:
 
 
 def build_runner(memory_service) -> TaskRunner:
-    registry = builtin_registry()
+    # ONE canonical workspace path: settings.workspace_dir. Injected into the
+    # tool registry so file tools, checkpoints, browser shots, and skills all
+    # operate in the same directory (audit fix).
+    registry = builtin_registry(workspace_dir=settings.workspace_dir)
     register_memory_tools(registry, memory_service, lambda: settings.memory_namespace)
     register_browser_tools(registry, get_browser_session)
     if settings.gmail_address and settings.gmail_app_password:

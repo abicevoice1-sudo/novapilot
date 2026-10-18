@@ -88,7 +88,8 @@ class TelegramChannel:
                         continue
                     sender = msg.get("from") or {}
                     sender_id = str(sender.get("id", ""))
-                    if self._allowed and sender_id not in self._allowed:
+                    # Deny-by-default: empty allowlist = no one may use the bot (audit fix).
+                    if sender_id not in self._allowed:
                         log.warning("telegram: ignoring message from unauthorized user %s", sender_id)
                         continue
                     await on_message(

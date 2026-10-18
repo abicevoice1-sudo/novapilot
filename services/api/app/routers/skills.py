@@ -13,8 +13,8 @@ router = APIRouter(prefix="/api/skills", tags=["skills"])
 class SkillCreate(BaseModel):
     name: str = Field(min_length=1, max_length=80)
     description: str = Field(min_length=1, max_length=300)
-    instructions: str = Field(min_length=1, description="Markdown: how to do the thing")
-    tools: list[str] = Field(default_factory=list)
+    instructions: str = Field(min_length=1, max_length=50000, description="Markdown: how to do the thing")
+    tools: list[str] = Field(default_factory=list, max_length=50)
 
 
 def _serialize(s: Skill) -> dict:
@@ -78,7 +78,7 @@ async def export_skill(name: str):
 
 
 class SkillImport(BaseModel):
-    content: str = Field(min_length=1, description="SKILL.md markdown (with YAML frontmatter)")
+    content: str = Field(min_length=1, max_length=100000, description="SKILL.md markdown (with YAML frontmatter)")
 
 
 @router.post("/import", dependencies=[Depends(require_auth)])

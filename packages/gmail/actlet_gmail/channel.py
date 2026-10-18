@@ -76,7 +76,8 @@ class GmailChannel:
         unseen = await asyncio.to_thread(client.list_messages, "INBOX", 20, True)
         for m in unseen:
             sender = m.from_addr.lower()
-            if self._allowed and not any(a in sender for a in self._allowed):
+            # Deny-by-default: empty allowlist = no sender accepted (audit fix).
+            if not any(a in sender for a in self._allowed):
                 log.info("ignoring email from non-allowed sender %s", m.from_addr)
                 await asyncio.to_thread(client.mark_seen, m.uid)
                 continue

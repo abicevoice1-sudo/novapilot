@@ -18,8 +18,8 @@ TERMINAL_EVENTS = {"task_completed", "task_failed", "task_cancelled"}
 
 
 class CreateTaskRequest(BaseModel):
-    goal: str
-    model: str | None = None
+    goal: str = Field(min_length=1, max_length=20000)
+    model: str | None = Field(default=None, max_length=200)
 
 
 class ApproveRequest(BaseModel):

@@ -21,17 +21,17 @@ If nothing is worth remembering, return []."""
 
 
 class AddMemoryRequest(BaseModel):
-    content: str
-    tags: list[str] = []
+    content: str = Field(max_length=20000)
+    tags: list[str] = Field(default=[], max_length=50)
 
 
 class UpdateMemoryRequest(BaseModel):
-    content: str | None = None
-    tags: list[str] | None = None
+    content: str | None = Field(default=None, max_length=20000)
+    tags: list[str] | None = Field(default=None, max_length=50)
 
 
 class ImportRequest(BaseModel):
-    memories: list[dict]
+    memories: list[dict] = Field(max_length=5000)
 
 
 @router.get("/api/memories", dependencies=[Depends(require_auth)])

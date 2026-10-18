@@ -175,18 +175,35 @@ class TaskRunner:
             fields["summary"] = result["summary"]
         await self.store.update(task_id, **fields)
         log.info("task %s -> %s", task_id, status)
+        if status in ("completed", "failed", "cancelled"):
+            # Audit fix: release in-memory runtime state for terminal tasks.
+            # Event history persists in the store; queues/controls/seq do not.
+            self._tasks.pop(task_id, None)
+            self._queues.pop(task_id, None)
+            self._controls.pop(task_id, None)
+            self._seq.pop(task_id, None)
+            if hasattr(self, "_approve_locks"):
+                self._approve_locks.pop(task_id, None)
 
     # ------------------------------------------------------------ controls
 
+    def _approve_lock(self, task_id: str) -> asyncio.Lock:
+        # Per-task lock makes approve() atomic: two concurrent approvals
+        # cannot both resume the same LangGraph thread (audit fix).
+        if not hasattr(self, "_approve_locks"):
+            self._approve_locks: dict[str, asyncio.Lock] = {}
+        return self._approve_locks.setdefault(task_id, asyncio.Lock())
+
     async def approve(self, task_id: str, approved: bool) -> None:
-        task = await self.store.get(task_id)
-        if not task or task["status"] != "waiting_approval":
-            raise ValueError("task is not waiting for approval")
-        self._ensure_runtime(task_id)
-        await self.store.update(task_id, status="running")
-        self._tasks[task_id] = asyncio.create_task(
-            self._drive(task_id, task["thread_id"], Command(resume=approved))
-        )
+        async with self._approve_lock(task_id):
+            task = await self.store.get(task_id)
+            if not task or task["status"] != "waiting_approval":
+                raise ValueError("task is not waiting for approval")
+            self._ensure_runtime(task_id)
+            await self.store.update(task_id, status="running")
+            self._tasks[task_id] = asyncio.create_task(
+                self._drive(task_id, task["thread_id"], Command(resume=approved))
+            )
 
     async def cancel(self, task_id: str) -> None:
         task = await self.store.get(task_id)

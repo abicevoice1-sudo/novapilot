@@ -37,7 +37,8 @@ class Settings(BaseSettings):
 
     # Channels (Phase C): Telegram bot. Unset = channel disabled.
     telegram_bot_token: str = ""
-    # Comma-separated Telegram user IDs allowed to use the bot. Empty = anyone.
+    # Comma-separated Telegram user IDs allowed to use the bot.
+    # Empty = NO ONE (deny-by-default; audit fix).
     telegram_allowed_users: str = ""
 
     # MCP servers (Phase C): JSON map of name -> {command, args}. Unset = none.
@@ -46,13 +47,15 @@ class Settings(BaseSettings):
     # Gmail (Phase F): address + Google App Password. Unset = disabled.
     gmail_address: str = ""
     gmail_app_password: str = ""
-    # Comma-separated sender addresses allowed to trigger tasks. Empty = anyone.
+    # Comma-separated sender addresses allowed to trigger tasks.
+    # Empty = NO ONE (deny-by-default; audit fix).
     gmail_allowed_senders: str = ""
 
     # Slack (Phase I): bot token + app token (Socket Mode). Unset = disabled.
     slack_bot_token: str = ""
     slack_app_token: str = ""
-    # Comma-separated Slack user IDs allowed. Empty = anyone.
+    # Comma-separated Slack user IDs allowed.
+    # Empty = NO ONE (deny-by-default; audit fix).
     slack_allowed_users: str = ""
 
     # Quiet hours (Phase F): HH:MM local time. Schedules don't fire inside

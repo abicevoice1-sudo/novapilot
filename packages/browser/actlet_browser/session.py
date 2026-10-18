@@ -185,6 +185,9 @@ class BrowserSession:
             resp = await page.goto(url, wait_until="domcontentloaded", timeout=30000)
         except Exception as e:
             raise BrowserError(f"navigation failed: {e}") from e
+        # Audit fix: redirects can land outside the allowlist — validate the
+        # FINAL url, not just the requested one.
+        self._check_scope(page.url)
         return {
             "url": page.url,
             "title": await page.title(),
@@ -243,6 +246,8 @@ class BrowserSession:
     async def back(self) -> dict:
         page = self._require_page()
         await page.go_back(wait_until="domcontentloaded", timeout=15000)
+        # Audit fix: history can also land outside the allowlist.
+        self._check_scope(page.url)
         shot = await self.screenshot(label="back")
         return {"url": page.url, "shot": shot}
 

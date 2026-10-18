@@ -258,27 +258,66 @@ export const resumeTask = (id: string) =>
  * The backend first replays history, then streams live events.
  * Resolves when the stream closes (terminal states close it server-side).
  * Throws on transport failure; task_failed / budget_exceeded arrive as events.
+ * Reconnects with backoff on transient drops (audit fix); 401 is terminal.
  */
 export async function streamTaskEvents(
   id: string,
   onEvent: (evt: TaskEvent) => void,
   signal?: AbortSignal,
 ): Promise<void> {
-  let res: Response
-  try {
-    res = await fetch(`/api/tasks/${encodeURIComponent(id)}/events`, {
-      headers: authHeaders({ Accept: 'text/event-stream' }),
-      signal,
-    })
-  } catch (e) {
-    if (e instanceof DOMException && e.name === 'AbortError') return
-    throw new Error('Lost connection to the task stream — is the backend running?')
-  }
-  if (!res.ok || !res.body) {
-    throw new Error(`Task stream failed (${res.status})`)
-  }
+  const MAX_RETRIES = 5
+  let attempt = 0
 
-  const reader = res.body.getReader()
+  for (;;) {
+    if (signal?.aborted) return
+    let res: Response
+    try {
+      res = await fetch(`/api/tasks/${encodeURIComponent(id)}/events`, {
+        headers: authHeaders({ Accept: 'text/event-stream' }),
+        signal,
+      })
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') return
+      if (++attempt > MAX_RETRIES) {
+        throw new Error('Lost connection to the task stream — is the backend running?')
+      }
+      await sleep(Math.min(1000 * 2 ** attempt, 15000))
+      continue
+    }
+    if (res.status === 401) {
+      throw new Error('Session expired — please re-enter your token.')
+    }
+    if (!res.ok || !res.body) {
+      if (++attempt > MAX_RETRIES) {
+        throw new Error(`Task stream failed (${res.status})`)
+      }
+      await sleep(Math.min(1000 * 2 ** attempt, 15000))
+      continue
+    }
+
+    attempt = 0 // reset on successful connect
+    try {
+      await readStream(res.body, onEvent, signal)
+      return // clean EOF — the task finished
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') return
+      if (++attempt > MAX_RETRIES) throw e
+      await sleep(Math.min(1000 * 2 ** attempt, 15000))
+      // loop: reconnect and resume
+    }
+  }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms))
+}
+
+async function readStream(
+  body: ReadableStream<Uint8Array>,
+  onEvent: (evt: TaskEvent) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  const reader = body.getReader()
   const decoder = new TextDecoder()
   let buffer = ''
 
@@ -300,6 +339,10 @@ export async function streamTaskEvents(
           continue // ignore malformed keep-alive lines
         }
       }
+    }
+    if (signal?.aborted) {
+      reader.cancel().catch(() => {})
+      return
     }
   }
 }

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from pathlib import Path
@@ -60,8 +61,18 @@ def skills_provider(goal: str) -> list[dict]:
         return []
 
 
+_dreaming_lock = asyncio.Lock()
+
+
 async def run_dreaming(limit: int = 20) -> dict:
     """Consolidate recent completed tasks into durable memories. Returns stats."""
+    # Audit fix: serialize dreaming runs so a manual trigger and the nightly
+    # scheduler can't consolidate the same tasks twice.
+    async with _dreaming_lock:
+        return await _run_dreaming_inner(limit)
+
+
+async def _run_dreaming_inner(limit: int) -> dict:
     from .agent import get_runner
     from .gateway_dep import get_gateway
     from .memory import get_memory_service

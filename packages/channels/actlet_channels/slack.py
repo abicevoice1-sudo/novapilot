@@ -115,7 +115,8 @@ class SlackChannel:
         if event.get("type") != "message" or event.get("bot_id"):
             return
         user = event.get("user", "")
-        if self._allowed and user not in self._allowed:
+        # Deny-by-default: empty allowlist = no one may use the bot (audit fix).
+        if user not in self._allowed:
             log.info("ignoring slack message from non-allowed user %s", user)
             return
         text = event.get("text", "")
