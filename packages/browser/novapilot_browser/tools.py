@@ -45,6 +45,18 @@ class _ShotArgs(BaseModel):
     label: str = Field(default="", description="Label for the screenshot")
 
 
+class _ScrollArgs(BaseModel):
+    selector: str = Field(default="", description="CSS selector of a scrollable element; empty = whole page")
+    direction: str = Field(default="down", description="up or down")
+    pixels: int = Field(default=600, ge=50, le=5000)
+
+
+class _WaitArgs(BaseModel):
+    selector: str = Field(default="", description="CSS selector to wait for (visible)")
+    text: str = Field(default="", description="Text to wait for (alternative to selector)")
+    timeout_sec: int = Field(default=15, ge=1, le=120)
+
+
 class _NoArgs(BaseModel):
     pass
 
@@ -155,6 +167,41 @@ def register_browser_tools(registry, session_provider: Callable[[], Awaitable]) 
         shot = await s.screenshot(label=args.label)
         return ToolResult(ok=True, output=f"Screenshot saved: {shot}", artifacts={"shot": shot})
 
+    async def browser_scroll(args: _ScrollArgs) -> ToolResult:
+        s = await _session()
+        try:
+            out = await s.scroll(args.selector, args.direction, args.pixels)
+        except Exception as e:  # noqa: BLE001
+            return ToolResult(ok=False, output=str(e))
+        return ToolResult(
+            ok=True,
+            output=f"Scrolled {args.direction} {args.pixels}px.",
+            verification=f"screenshot {out['shot']}",
+            artifacts=_shot_artifacts(out),
+        )
+
+    async def browser_hover(args: _SelectorArgs) -> ToolResult:
+        s = await _session()
+        try:
+            out = await s.hover(args.selector)
+        except Exception as e:  # noqa: BLE001
+            return ToolResult(ok=False, output=str(e))
+        return ToolResult(
+            ok=True,
+            output=f"Hovered {args.selector}.",
+            verification=f"screenshot {out['shot']}",
+            artifacts=_shot_artifacts(out),
+        )
+
+    async def browser_wait_for(args: _WaitArgs) -> ToolResult:
+        s = await _session()
+        try:
+            out = await s.wait_for(args.selector, args.text, args.timeout_sec)
+        except Exception as e:  # noqa: BLE001
+            return ToolResult(ok=False, output=str(e))
+        target = args.selector or repr(args.text)
+        return ToolResult(ok=True, output=f"Found {target} at {out['url']}.")
+
     tools = [
         ("browser_open", "Open a URL in the agent browser (scoped navigation).", _UrlArgs, browser_open),
         ("browser_snapshot", "List interactive elements (buttons, links, inputs) with CSS selectors to use in actions.", _NoArgs, browser_snapshot),
@@ -163,6 +210,9 @@ def register_browser_tools(registry, session_provider: Callable[[], Awaitable]) 
         ("browser_fill", "Fill a text input. Use a selector from browser_snapshot.", _FillArgs, browser_fill),
         ("browser_select", "Choose an option in a dropdown.", _SelectArgs, browser_select),
         ("browser_press", "Press a key (e.g. Enter, Tab, Escape) on an element.", _PressArgs, browser_press),
+        ("browser_scroll", "Scroll the page or an element up/down.", _ScrollArgs, browser_scroll),
+        ("browser_hover", "Hover over an element (reveals menus).", _SelectorArgs, browser_hover),
+        ("browser_wait_for", "Wait for an element or text to appear (dynamic pages).", _WaitArgs, browser_wait_for),
         ("browser_back", "Go back one page in history.", _NoArgs, browser_back),
         ("browser_screenshot", "Take a screenshot of the current page.", _ShotArgs, browser_screenshot),
     ]

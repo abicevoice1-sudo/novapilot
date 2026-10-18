@@ -41,6 +41,17 @@ class FakeSession:
     async def back(self):
         return {"url": "http://x/", "shot": await self.screenshot()}
 
+    async def scroll(self, selector="", direction="down", pixels=600):
+        return {"url": "http://x/", "shot": await self.screenshot()}
+
+    async def hover(self, selector):
+        return {"url": "http://x/", "shot": await self.screenshot()}
+
+    async def wait_for(self, selector="", text="", timeout_sec=15):
+        if not selector and not text:
+            raise BrowserError("wait_for needs a selector or text")
+        return {"url": "http://x/", "found": True}
+
 
 @pytest.fixture()
 def registry():
@@ -115,3 +126,34 @@ def test_not_started_errors():
     s = BrowserSession()
     with pytest.raises(BrowserError):
         s._require_page()
+
+
+async def test_scroll_carries_shot(registry):
+    reg, _ = registry
+    result, _ = await reg.call("browser_scroll", {"direction": "down", "pixels": 800})
+    assert result.ok and "Scrolled" in result.output
+
+
+async def test_hover_carries_shot(registry):
+    reg, _ = registry
+    result, _ = await reg.call("browser_hover", {"selector": "#menu"})
+    assert result.ok and "Hovered" in result.output
+
+
+async def test_wait_for_finds_text(registry):
+    reg, _ = registry
+    result, _ = await reg.call("browser_wait_for", {"text": "Buy now"})
+    assert result.ok and "Found" in result.output
+
+
+async def test_wait_for_needs_target(registry):
+    reg, _ = registry
+    result, _ = await reg.call("browser_wait_for", {})
+    assert result.ok is False
+
+
+def test_twelve_browser_tools_registered(registry):
+    reg, _ = registry
+    names = {s["name"] for s in reg.specs()}
+    assert len(names) == 12
+    assert {"browser_scroll", "browser_hover", "browser_wait_for"} <= names

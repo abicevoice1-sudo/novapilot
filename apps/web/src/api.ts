@@ -540,3 +540,18 @@ export interface ChannelStatus {
 
 export const getChannels = () =>
   request<{ channels: Record<string, ChannelStatus> }>('/api/channels')
+
+/* ------------------------- Agent control ------------------------- */
+
+export interface AgentStatus {
+  paused: boolean
+  quiet_hours: boolean
+}
+
+export const getAgentStatus = () => request<AgentStatus>('/api/agent/status')
+
+export const pauseAgent = () =>
+  request<{ paused: boolean }>('/api/agent/pause', { method: 'POST' })
+
+export const resumeAgent = () =>
+  request<{ paused: boolean }>('/api/agent/resume', { method: 'POST' })

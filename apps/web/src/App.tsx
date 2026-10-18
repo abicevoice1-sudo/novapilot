@@ -6,7 +6,7 @@ import TaskDetail from './pages/TaskDetail'
 import MemoryPage from './pages/Memory'
 import Schedules from './pages/Schedules'
 import Skills from './pages/Skills'
-import { getHealth } from './api'
+import { getAgentStatus, getHealth, pauseAgent, resumeAgent } from './api'
 
 type Route =
   | { name: 'chat' }
@@ -64,6 +64,50 @@ function HealthDot(): React.ReactElement {
   )
 }
 
+function PauseToggle(): React.ReactElement {
+  const [paused, setPaused] = useState<boolean | null>(null)
+  const [busy, setBusy] = useState(false)
+  useEffect(() => {
+    let alive = true
+    const check = () =>
+      getAgentStatus()
+        .then((s) => alive && setPaused(s.paused))
+        .catch(() => {})
+    void check()
+    const id = setInterval(check, 15000)
+    return () => {
+      alive = false
+      clearInterval(id)
+    }
+  }, [])
+  const toggle = async () => {
+    setBusy(true)
+    try {
+      const r = paused ? await resumeAgent() : await pauseAgent()
+      setPaused(r.paused)
+    } catch {
+      /* error surfaces on next poll */
+    } finally {
+      setBusy(false)
+    }
+  }
+  if (paused === null) return <></>
+  return (
+    <button
+      onClick={() => void toggle()}
+      disabled={busy}
+      title={paused ? 'Resume the agent (schedules + channels)' : 'Pause the agent (schedules + channels)'}
+      className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
+        paused
+          ? 'bg-amber-500/15 text-amber-300 hover:bg-amber-500/25'
+          : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+      }`}
+    >
+      {paused ? '⏸ Paused' : '▶ Active'}
+    </button>
+  )
+}
+
 export default function App(): React.ReactElement {
   const { route, navigate } = useRoute()
 
@@ -97,6 +141,7 @@ export default function App(): React.ReactElement {
           {link('/settings', 'Settings', route.name === 'settings')}
         </nav>
         <div className="ml-auto flex items-center gap-2">
+          <PauseToggle />
           <HealthDot />
         </div>
       </header>

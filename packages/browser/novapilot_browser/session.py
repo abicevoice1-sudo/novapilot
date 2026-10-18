@@ -182,6 +182,52 @@ class BrowserSession:
         shot = await self.screenshot(label="back")
         return {"url": page.url, "shot": shot}
 
+    async def scroll(self, selector: str = "", direction: str = "down", pixels: int = 600) -> dict:
+        """Scroll the page or an element. direction: up/down."""
+        page = self._require_page()
+        delta = pixels if direction == "down" else -pixels
+        try:
+            if selector:
+                loc = page.locator(selector).first
+                await loc.evaluate(f"(el) => el.scrollBy(0, {delta})")
+            else:
+                await page.evaluate(f"window.scrollBy(0, {delta})")
+        except Exception as e:
+            raise BrowserError(f"scroll failed: {e}") from e
+        shot = await self.screenshot(label=f"scroll {direction}")
+        return {"url": page.url, "shot": shot}
+
+    async def hover(self, selector: str) -> dict:
+        page = self._require_page()
+        try:
+            loc = page.locator(selector).first
+            await loc.wait_for(state="visible", timeout=10000)
+            await loc.hover(timeout=10000)
+        except Exception as e:
+            raise BrowserError(f"hover failed on {selector!r}: {e}") from e
+        shot = await self.screenshot(label=f"hover {selector}")
+        return {"url": page.url, "shot": shot}
+
+    async def wait_for(
+        self, selector: str = "", text: str = "", timeout_sec: int = 15
+    ) -> dict:
+        """Wait for an element (visible) or text to appear. At least one required."""
+        page = self._require_page()
+        if not selector and not text:
+            raise BrowserError("wait_for needs a selector or text")
+        try:
+            if selector:
+                await page.locator(selector).first.wait_for(
+                    state="visible", timeout=timeout_sec * 1000
+                )
+            else:
+                await page.get_by_text(text).first.wait_for(
+                    state="visible", timeout=timeout_sec * 1000
+                )
+        except Exception as e:
+            raise BrowserError(f"wait_for timed out after {timeout_sec}s: {e}") from e
+        return {"url": page.url, "found": True}
+
     @property
     def current_url(self) -> str:
         return self._page.url if self._page else ""
