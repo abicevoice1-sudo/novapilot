@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from novapilot_agent import TaskRunner
+from novapilot_agent.checkpoints import CheckpointManager
 from novapilot_agent.tools import builtin_registry
 from novapilot_browser import BrowserSession
 from novapilot_browser.tools import register_browser_tools
@@ -14,6 +15,15 @@ from novapilot_memory.tools import register_memory_tools
 from .config import settings
 from .learning import skills_provider
 from .task_store import SqlTaskStore
+
+_checkpoint_manager: CheckpointManager | None = None
+
+
+def get_checkpoint_manager() -> CheckpointManager:
+    global _checkpoint_manager
+    if _checkpoint_manager is None:
+        _checkpoint_manager = CheckpointManager(settings.workspace_dir)
+    return _checkpoint_manager
 
 _runner: TaskRunner | None = None
 _browser: BrowserSession | None = None
@@ -62,6 +72,7 @@ def build_runner(memory_service) -> TaskRunner:
         store=SqlTaskStore(),
         checkpoint_path=settings.checkpoint_path,
         skills_provider=skills_provider,
+        checkpoint_manager=get_checkpoint_manager(),
     )
 
 

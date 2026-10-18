@@ -239,6 +239,45 @@ async def _shell(args: _ShellArgs) -> ToolResult:
     )
 
 
+class _SandboxShellArgs(BaseModel):
+    command: str = Field(description="Shell command to run inside the Docker sandbox")
+    timeout_sec: int = Field(default=60, ge=5, le=300)
+
+
+async def _shell_sandboxed(args: _SandboxShellArgs) -> ToolResult:
+    """Full shell inside a locked-down Docker container (needs approval)."""
+    from .sandbox import DockerSandbox
+
+    sandbox = DockerSandbox()
+    try:
+        result = await asyncio.to_thread(
+            sandbox.run, args.command, str(_workspace()), args.timeout_sec
+        )
+    except RuntimeError as e:
+        return ToolResult(ok=False, output=str(e))
+    out = result.stdout
+    if result.stderr:
+        out += f"\n[stderr]\n{result.stderr}"
+    if result.truncated:
+        out += "\n[truncated]"
+    return ToolResult(
+        ok=result.returncode == 0,
+        output=out,
+        verification=f"exit code {result.returncode} (docker sandbox)",
+    )
+
+
+def sandboxed_shell_available() -> bool:
+    """True when NOVAPILOT_SANDBOX=docker and Docker is reachable."""
+    import os
+
+    if os.environ.get("NOVAPILOT_SANDBOX", "").lower() != "docker":
+        return False
+    from .sandbox import DockerSandbox
+
+    return DockerSandbox.available()
+
+
 def builtin_registry() -> ToolRegistry:
     reg = ToolRegistry()
     reg.register(Tool("read_file", "Read a text file from the workspace", _PathArgs, _read_file))
@@ -257,4 +296,16 @@ def builtin_registry() -> ToolRegistry:
     reg.register(
         Tool("shell", "Run a read-only allowlisted shell command", _ShellArgs, _shell)
     )
+    if sandboxed_shell_available():
+        reg.register(
+            Tool(
+                "shell_sandboxed",
+                "Run a full shell command inside a locked-down Docker container "
+                "(no network, capped resources). Needs approval.",
+                _SandboxShellArgs,
+                _shell_sandboxed,
+                risk="high",
+                requires_approval=True,
+            )
+        )
     return reg

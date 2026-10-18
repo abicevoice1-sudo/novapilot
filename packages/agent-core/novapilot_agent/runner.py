@@ -36,17 +36,19 @@ class TaskRunner:
         store: TaskStore | None = None,
         checkpoint_path: str = "./checkpoints.db",
         skills_provider=None,
+        checkpoint_manager=None,
     ) -> None:
         self.gateway_factory = gateway_factory
         self.registry = registry or builtin_registry()
         self.store = store
         self._skills_provider = skills_provider
+        self._checkpoint_manager = checkpoint_manager
         # The default AsyncSqliteSaver needs async setup, so it is created
         # lazily on first use (tests pass an InMemorySaver directly).
         self._checkpointer_cm = None
         self._checkpoint_path = checkpoint_path
         self.checkpointer = checkpointer
-        self.graph = build_graph(self.registry, checkpointer, skills_provider) if checkpointer else None
+        self.graph = build_graph(self.registry, checkpointer, skills_provider, self._checkpoint_manager) if checkpointer else None
         self._queues: dict[str, asyncio.Queue] = {}
         self._tasks: dict[str, asyncio.Task] = {}
         self._controls: dict[str, dict] = {}
@@ -56,7 +58,7 @@ class TaskRunner:
         if self.graph is None:
             self._checkpointer_cm = AsyncSqliteSaver.from_conn_string(self._checkpoint_path)
             self.checkpointer = await self._checkpointer_cm.__aenter__()
-            self.graph = build_graph(self.registry, self.checkpointer, self._skills_provider)
+            self.graph = build_graph(self.registry, self.checkpointer, self._skills_provider, self._checkpoint_manager)
 
     async def aclose(self) -> None:
         if self._checkpointer_cm is not None:
@@ -101,6 +103,7 @@ class TaskRunner:
         return {
             "configurable": {
                 "thread_id": thread_id,
+                "task_id": task_id,
                 "emit": self._make_emit(task_id),
                 "control": control,
                 "gateway": control.get("gateway") or self.gateway_factory(),

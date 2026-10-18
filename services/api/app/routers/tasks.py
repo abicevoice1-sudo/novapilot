@@ -149,3 +149,22 @@ async def resume_task(task_id: str):
     except ValueError as e:
         raise HTTPException(409, str(e)) from e
     return {"status": "running"}
+
+
+@router.post("/api/tasks/{task_id}/revert", dependencies=[Depends(require_auth)])
+async def revert_task(task_id: str):
+    """Restore the workspace to the latest pre-step checkpoint (Time Travel)."""
+    from ..agent import get_checkpoint_manager
+
+    task = await get_runner().get_state(task_id)
+    if task is None:
+        raise HTTPException(404, "task not found")
+    mgr = get_checkpoint_manager()
+    step_id = mgr.latest(task_id)
+    if step_id is None:
+        raise HTTPException(404, "no checkpoints for this task")
+    try:
+        mgr.restore(task_id, step_id)
+    except ValueError as e:
+        raise HTTPException(404, str(e)) from e
+    return {"reverted_to": step_id}

@@ -13,7 +13,7 @@ def test_health_ok():
     body = r.json()
     assert body["ok"] is True
     assert body["service"] == "novapilot-api"
-    assert body["milestone"] == 3
+    assert body["milestone"] == 6
 
 
 def test_settings_defaults():

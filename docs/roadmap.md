@@ -112,6 +112,25 @@ planner skill matching confirmed. 9 learning + 4 API tests green.
 hit the approval gate for `mcp_weather_get_weather`, approved, completed with
 "Sunny in Baltimore". Telegram→task→reply flow integration-tested.
 
+## Phase D — Hardening ✅ (2026-10-18)
+
+- [x] Prompt-injection evals (`packages/agent-core/tests/test_injection.py`,
+      documented in `tests/security/`): approval-gate immunity, untrusted-data
+      labeling in summarizer prompt, planner input hygiene, skill containment,
+      goal injection — 5 evals, all structural (mechanisms, not model behavior)
+- [x] Workspace checkpoints (Time Travel): snapshot before every approved
+      risky step, `POST /api/tasks/{id}/revert` restores; `CheckpointManager`
+      in agent-core, 5 unit + 2 API tests
+- [x] Docker sandbox: `DockerSandbox` (no network, capped resources, read-only
+      root) + `shell_sandboxed` tool (high-risk, approval-gated) registered
+      only when `NOVAPILOT_SANDBOX=docker` and Docker is reachable; graceful
+      fallback otherwise. 5 tests (mocked — no Docker in CI)
+- [x] docs updates (security evals README, roadmap)
+
+**Acceptance:** 39 core + 50 API tests green; injection evals prove the gates
+are code-not-prompt; checkpoint revert verified via API test (approved
+write_file → checkpoint_created event → revert succeeds).
+
 **Acceptance:** a scheduled research job runs, emails the result, survives a restart; user can pause everything with one switch.
 
 ## Milestone 7 — Integrations & multi-agent

@@ -91,6 +91,6 @@ def health() -> dict:
     return {
         "ok": True,
         "service": "novapilot-api",
-        "milestone": 3,
+        "milestone": 6,
         "model_default": settings.model_default,
     }
