@@ -49,6 +49,12 @@ class Settings(BaseSettings):
     # Comma-separated sender addresses allowed to trigger tasks. Empty = anyone.
     gmail_allowed_senders: str = ""
 
+    # Slack (Phase I): bot token + app token (Socket Mode). Unset = disabled.
+    slack_bot_token: str = ""
+    slack_app_token: str = ""
+    # Comma-separated Slack user IDs allowed. Empty = anyone.
+    slack_allowed_users: str = ""
+
     # Quiet hours (Phase F): HH:MM local time. Schedules don't fire inside
     # the window (run-now still works). Empty = no quiet hours.
     quiet_hours_start: str = ""

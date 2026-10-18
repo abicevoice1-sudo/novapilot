@@ -57,6 +57,14 @@ class _WaitArgs(BaseModel):
     timeout_sec: int = Field(default=15, ge=1, le=120)
 
 
+class _TabIdArgs(BaseModel):
+    tab_id: str = Field(description="Tab ID from browser_tab_list")
+
+
+class _TabNewArgs(BaseModel):
+    url: str = Field(default="", description="URL to open in the new tab (optional)")
+
+
 class _NoArgs(BaseModel):
     pass
 
@@ -202,6 +210,49 @@ def register_browser_tools(registry, session_provider: Callable[[], Awaitable]) 
         target = args.selector or repr(args.text)
         return ToolResult(ok=True, output=f"Found {target} at {out['url']}.")
 
+    async def browser_tab_new(args: _TabNewArgs) -> ToolResult:
+        s = await _session()
+        try:
+            out = await s.tab_new(args.url)
+        except Exception as e:  # noqa: BLE001
+            return ToolResult(ok=False, output=str(e))
+        return ToolResult(
+            ok=True,
+            output=f"Opened tab {out['tab_id']} ({out['url']}).",
+            verification=f"screenshot {out['shot']}",
+            artifacts=_shot_artifacts(out),
+        )
+
+    async def browser_tab_list(args: _NoArgs) -> ToolResult:
+        s = await _session()
+        tabs = await s.tab_list()
+        lines = [
+            f"{'*' if t['active'] else ' '} {t['tab_id']}: {t['title']!r} — {t['url']}"
+            for t in tabs
+        ]
+        return ToolResult(ok=True, output="\n".join(lines) or "(no tabs)")
+
+    async def browser_tab_switch(args: _TabIdArgs) -> ToolResult:
+        s = await _session()
+        try:
+            out = await s.tab_switch(args.tab_id)
+        except Exception as e:  # noqa: BLE001
+            return ToolResult(ok=False, output=str(e))
+        return ToolResult(
+            ok=True,
+            output=f"Switched to {out['tab_id']} ({out['url']}).",
+            verification=f"screenshot {out['shot']}",
+            artifacts=_shot_artifacts(out),
+        )
+
+    async def browser_tab_close(args: _TabIdArgs) -> ToolResult:
+        s = await _session()
+        try:
+            out = await s.tab_close(args.tab_id)
+        except Exception as e:  # noqa: BLE001
+            return ToolResult(ok=False, output=str(e))
+        return ToolResult(ok=True, output=f"Closed {out['closed']}; active is {out['active']}.")
+
     tools = [
         ("browser_open", "Open a URL in the agent browser (scoped navigation).", _UrlArgs, browser_open),
         ("browser_snapshot", "List interactive elements (buttons, links, inputs) with CSS selectors to use in actions.", _NoArgs, browser_snapshot),
@@ -213,6 +264,10 @@ def register_browser_tools(registry, session_provider: Callable[[], Awaitable]) 
         ("browser_scroll", "Scroll the page or an element up/down.", _ScrollArgs, browser_scroll),
         ("browser_hover", "Hover over an element (reveals menus).", _SelectorArgs, browser_hover),
         ("browser_wait_for", "Wait for an element or text to appear (dynamic pages).", _WaitArgs, browser_wait_for),
+        ("browser_tab_new", "Open a new browser tab (optionally with a URL).", _TabNewArgs, browser_tab_new),
+        ("browser_tab_list", "List open tabs with their URLs and titles.", _NoArgs, browser_tab_list),
+        ("browser_tab_switch", "Switch to another tab.", _TabIdArgs, browser_tab_switch),
+        ("browser_tab_close", "Close a tab (not the last one).", _TabIdArgs, browser_tab_close),
         ("browser_back", "Go back one page in history.", _NoArgs, browser_back),
         ("browser_screenshot", "Take a screenshot of the current page.", _ShotArgs, browser_screenshot),
     ]

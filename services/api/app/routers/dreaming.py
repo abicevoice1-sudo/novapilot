@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from ..auth import require_auth
-from ..learning import get_skill_store, run_dreaming
+from ..learning import get_skill_store, run_dreaming, suggest_schedules
 
 router = APIRouter(tags=["dreaming"])
 
@@ -19,6 +19,18 @@ async def run_dreaming_now():
         return await run_dreaming()
     except Exception as e:
         raise HTTPException(502, f"dreaming needs a reachable model: {e}") from e
+
+
+@router.get("/api/dreaming/schedule-suggestions", dependencies=[Depends(require_auth)])
+async def schedule_suggestions():
+    """Propose schedules from recurring task patterns.
+
+    Nothing is created — the user approves each proposal (POST /api/schedules).
+    """
+    try:
+        return await suggest_schedules()
+    except Exception as e:
+        raise HTTPException(502, f"suggestions need a reachable model: {e}") from e
 
 
 MAKE_SKILL_PROMPT = """Study this completed agent task and write a reusable SKILL for it:

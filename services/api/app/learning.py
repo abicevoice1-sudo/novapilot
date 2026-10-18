@@ -83,3 +83,22 @@ async def run_dreaming(limit: int = 20) -> dict:
 
     _save_dreamed(dreamed | {t["id"] for t in fresh[:limit]})
     return {"tasks_considered": len(fresh[:limit]), "facts_stored": len(stored), "facts": stored}
+
+
+async def suggest_schedules(limit: int = 30) -> dict:
+    """Propose schedules from recurring task patterns. Nothing is created."""
+    from .agent import get_runner
+    from .gateway_dep import get_gateway
+    from .memory import get_memory_service
+
+    runner = get_runner()
+    tasks = await runner.store.list(limit=limit)
+    fresh = [t for t in tasks if t.get("status") == "completed" and t.get("goal")]
+    if not fresh:
+        return {"tasks_considered": 0, "proposals": []}
+
+    gateway = get_gateway()
+    memory_svc = await get_memory_service()
+    consolidator = DreamConsolidator(gateway, memory_svc, settings.memory_namespace)
+    proposals = await consolidator.suggest_schedules(fresh)
+    return {"tasks_considered": len(fresh), "proposals": proposals}

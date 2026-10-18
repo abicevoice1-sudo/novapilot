@@ -47,6 +47,18 @@ class ChannelManager:
             self.channels["gmail"] = GmailChannel(_factory, allowed_senders=allowed_senders)
             log.info("gmail channel configured (allowed_senders=%s)",
                      sorted(allowed_senders) or "anyone")
+        if settings.slack_bot_token and settings.slack_app_token:
+            from actlet_channels import SlackChannel
+
+            allowed_slack = {
+                u.strip() for u in (settings.slack_allowed_users or "").split(",") if u.strip()
+            }
+            self.channels["slack"] = SlackChannel(
+                settings.slack_bot_token, settings.slack_app_token,
+                allowed_users=allowed_slack,
+            )
+            log.info("slack channel configured (allowed_users=%s)",
+                     sorted(allowed_slack) or "anyone")
 
     async def start(self) -> None:
         for name, ch in self.channels.items():

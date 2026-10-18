@@ -26,6 +26,19 @@ RECENT WORK:
 {work}
 """
 
+SUGGEST_PROMPT = """You review an AI agent's recent task history and spot RECURRING patterns
+the user would benefit from automating on a schedule. Examples: "check flights
+every Friday", "morning news briefing", "weekly inbox triage".
+
+Return ONLY a JSON array of {{"name": "...", "goal": "...", "cadence": "..."}}
+where cadence is plain English like "every morning at 8am" or "every Friday at 6pm".
+Empty array if no clear recurring pattern. 3 max. Only suggest when the pattern
+is strong (same kind of task 2+ times). Do NOT suggest one-off tasks.
+
+RECENT TASKS:
+{work}
+"""
+
 
 class DreamConsolidator:
     def __init__(self, gateway, memory_service, namespace: str = "default") -> None:
@@ -72,3 +85,36 @@ class DreamConsolidator:
                 log.info("dreaming: skipped a fact (%s)", e)
         log.info("dreaming: stored %d facts from %d tasks", len(stored), len(work))
         return stored
+
+    async def suggest_schedules(self, tasks: list[dict]) -> list[dict]:
+        """Spot recurring task patterns and propose schedules for user approval.
+
+        Returns proposals; nothing is created. The user approves via the API.
+        """
+        goals = [t.get("goal", "") for t in tasks if t.get("goal")]
+        if not goals:
+            return []
+        text = await self.gateway.chat(
+            [
+                {"role": "system", "content": "You output only JSON."},
+                {"role": "user", "content": SUGGEST_PROMPT.format(work="\n".join(goals[:20]))},
+            ]
+        )
+        try:
+            items = json.loads(text.strip().removeprefix("```json").removeprefix("```").removesuffix("```"))
+            assert isinstance(items, list)
+        except Exception as e:  # noqa: BLE001 — a bad dream is dropped
+            log.warning("dreaming: could not parse schedule suggestions: %s", e)
+            return []
+        proposals = []
+        for item in items:
+            if not isinstance(item, dict) or not item.get("goal") or not item.get("cadence"):
+                continue
+            proposals.append({
+                "name": str(item.get("name") or item["goal"])[:120],
+                "goal": str(item["goal"])[:2000],
+                "cadence": str(item["cadence"])[:200],
+                "source": "dreaming",
+            })
+        log.info("dreaming: proposed %d schedules", len(proposals))
+        return proposals

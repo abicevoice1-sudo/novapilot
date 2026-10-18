@@ -73,6 +73,9 @@ class BrowserSession:
         self._pw = None
         self._browser = None
         self._page = None
+        self._tabs: dict[str, object] = {}
+        self._active_tab: str | None = None
+        self._tab_count = 0
         self._shot_count = 0
 
     async def start(self) -> None:
@@ -84,12 +87,78 @@ class BrowserSession:
         try:
             self._pw = await async_playwright().start()
             self._browser = await self._pw.chromium.launch(headless=self.headless)
-            self._page = await self._browser.new_page(viewport={"width": 1280, "height": 800})
+            page = await self._browser.new_page(viewport={"width": 1280, "height": 800})
         except Exception as e:
             raise BrowserError(
                 "Chromium could not start. Run: pip install playwright && playwright install chromium"
             ) from e
+        self._tab_count += 1
+        tab_id = f"tab-{self._tab_count}"
+        self._tabs[tab_id] = page
+        self._active_tab = tab_id
+        self._page = page  # backwards-compat alias for the active tab
         log.info("browser session started (headless=%s)", self.headless)
+
+    def _require_page(self):
+        if self._active_tab is None or self._active_tab not in self._tabs:
+            raise BrowserError("browser not started")
+        page = self._tabs[self._active_tab]
+        self._page = page
+        return page
+
+    async def tab_new(self, url: str = "") -> dict:
+        if self._browser is None:
+            raise BrowserError("browser not started")
+        if url:
+            self._check_scope(url)
+        page = await self._browser.new_page(viewport={"width": 1280, "height": 800})
+        self._tab_count += 1
+        tab_id = f"tab-{self._tab_count}"
+        self._tabs[tab_id] = page
+        self._active_tab = tab_id
+        self._page = page
+        if url:
+            await page.goto(url, wait_until="domcontentloaded", timeout=30000)
+        shot = await self.screenshot(label=f"new tab {tab_id}")
+        return {"tab_id": tab_id, "url": page.url, "shot": shot}
+
+    async def tab_list(self) -> list[dict]:
+        out = []
+        for tid, page in self._tabs.items():
+            try:
+                title = await page.title()
+            except Exception:  # noqa: BLE001
+                title = ""
+            out.append({
+                "tab_id": tid,
+                "url": page.url,
+                "title": title,
+                "active": tid == self._active_tab,
+            })
+        return out
+
+    async def tab_switch(self, tab_id: str) -> dict:
+        if tab_id not in self._tabs:
+            raise BrowserError(f"no such tab: {tab_id}")
+        self._active_tab = tab_id
+        self._page = self._tabs[tab_id]
+        shot = await self.screenshot(label=f"switch {tab_id}")
+        return {"tab_id": tab_id, "url": self._page.url, "shot": shot}
+
+    async def tab_close(self, tab_id: str) -> dict:
+        if tab_id not in self._tabs:
+            raise BrowserError(f"no such tab: {tab_id}")
+        if len(self._tabs) == 1:
+            raise BrowserError("cannot close the last tab")
+        page = self._tabs.pop(tab_id)
+        try:
+            await page.close()
+        except Exception:  # noqa: BLE001 — closing a dead page is fine
+            log.debug("tab_close: page already closed")
+        if self._active_tab == tab_id:
+            self._active_tab = next(iter(self._tabs))
+            self._page = self._tabs[self._active_tab]
+        return {"closed": tab_id, "active": self._active_tab}
 
     async def close(self) -> None:
         if self._browser is not None:
@@ -98,11 +167,6 @@ class BrowserSession:
         if self._pw is not None:
             await self._pw.stop()
             self._pw = None
-
-    def _require_page(self):
-        if self._page is None:
-            raise BrowserError("browser not started")
-        return self._page
 
     def _check_scope(self, url: str) -> None:
         parsed = urlparse(url)
