@@ -133,3 +133,164 @@ export async function streamChat(
   }
   return conversationId
 }
+
+/* ------------------------------------------------------------------ */
+/* Tasks (Milestone 3 contract)                                        */
+/* ------------------------------------------------------------------ */
+
+export type TaskStatus =
+  | 'pending'
+  | 'running'
+  | 'waiting_approval'
+  | 'paused'
+  | 'failed'
+  | 'completed'
+  | 'cancelled'
+
+export interface TaskSummary {
+  id: string
+  goal: string
+  status: TaskStatus
+  current_step: number
+  total_steps: number
+  created_at: string
+  updated_at: string
+}
+
+export interface TaskStep {
+  id: string
+  description: string
+  tool: string
+  args: unknown
+  status: string
+  result: string | null
+}
+
+export interface TaskUsage {
+  cost_usd: number
+  tokens: number
+}
+
+export interface TaskDetail {
+  id: string
+  goal: string
+  status: TaskStatus
+  model: string
+  steps: TaskStep[]
+  usage: TaskUsage
+  error: string | null
+  pending_approval: { id: string; description: string; tool: string; args: unknown } | null
+  created_at: string
+  updated_at: string
+}
+
+export type TaskEventType =
+  | 'task_started'
+  | 'plan_created'
+  | 'step_started'
+  | 'tool_called'
+  | 'tool_result'
+  | 'approval_required'
+  | 'approval_decided'
+  | 'step_verified'
+  | 'budget_exceeded'
+  | 'task_paused'
+  | 'task_completed'
+  | 'task_failed'
+  | 'task_cancelled'
+
+export interface TaskEvent {
+  type: TaskEventType | string
+  step?: TaskStep
+  steps?: TaskStep[]
+  usage?: TaskUsage
+  error?: string | null
+  approved?: boolean
+  message?: string
+  [key: string]: unknown
+}
+
+export const createTask = (goal: string, model?: string) =>
+  request<{ id: string; status: TaskStatus }>('/api/tasks', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(model ? { goal, model } : { goal }),
+  })
+
+export const getTasks = () => request<{ tasks: TaskSummary[] }>('/api/tasks')
+
+export const getTask = (id: string) =>
+  request<TaskDetail>(`/api/tasks/${encodeURIComponent(id)}`)
+
+export const approveTask = (id: string, approved: boolean) =>
+  request<{ status: TaskStatus }>(`/api/tasks/${encodeURIComponent(id)}/approve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ approved }),
+  })
+
+export const cancelTask = (id: string) =>
+  request<{ status: TaskStatus }>(`/api/tasks/${encodeURIComponent(id)}/cancel`, {
+    method: 'POST',
+  })
+
+export const pauseTask = (id: string) =>
+  request<{ status: TaskStatus }>(`/api/tasks/${encodeURIComponent(id)}/pause`, {
+    method: 'POST',
+  })
+
+export const resumeTask = (id: string) =>
+  request<{ status: TaskStatus }>(`/api/tasks/${encodeURIComponent(id)}/resume`, {
+    method: 'POST',
+  })
+
+/**
+ * GET /api/tasks/{id}/events as SSE over fetch + ReadableStream.
+ * The backend first replays history, then streams live events.
+ * Resolves when the stream closes (terminal states close it server-side).
+ * Throws on transport failure; task_failed / budget_exceeded arrive as events.
+ */
+export async function streamTaskEvents(
+  id: string,
+  onEvent: (evt: TaskEvent) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  let res: Response
+  try {
+    res = await fetch(`/api/tasks/${encodeURIComponent(id)}/events`, {
+      headers: authHeaders({ Accept: 'text/event-stream' }),
+      signal,
+    })
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') return
+    throw new Error('Lost connection to the task stream — is the backend running?')
+  }
+  if (!res.ok || !res.body) {
+    throw new Error(`Task stream failed (${res.status})`)
+  }
+
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+
+    let sep: number
+    while ((sep = buffer.indexOf('\n\n')) >= 0) {
+      const chunk = buffer.slice(0, sep)
+      buffer = buffer.slice(sep + 2)
+      for (const line of chunk.split('\n')) {
+        const trimmed = line.trim()
+        if (!trimmed.startsWith('data:')) continue
+        try {
+          onEvent(JSON.parse(trimmed.slice(5).trim()) as TaskEvent)
+        } catch {
+          continue // ignore malformed keep-alive lines
+        }
+      }
+    }
+  }
+}

@@ -33,12 +33,24 @@ cd apps/web && npm install && npm run dev          # → http://localhost:5173 (
 
 ```bash
 curl localhost:8000/health
-# {"ok": true, "service": "novapilot-api", "milestone": 2, "model_default": "ollama/gpt-oss:20b"}
+# {"ok": true, "service": "novapilot-api", "milestone": 3, "model_default": "ollama/gpt-oss:20b"}
 
-cd services/api && pytest -q                       # API tests (stubbed gateway, no keys)
+cd services/api && pytest -q                       # API tests (stubbed gateway/runner, no keys)
 cd ../../packages/model-gateway && pytest -q       # gateway tests (fallback + budgets)
+cd ../agent-core && pytest -q                      # agent-core tests (tools, graph, runner)
 cd ../../apps/web && npm run build                 # web build
 ```
+
+## Tasks (Milestone 3)
+
+`POST /api/tasks {"goal": "..."}` — Nova plans with LangGraph, calls validated
+tools, and streams progress as SSE on `/api/tasks/{id}/events`. Tools that write
+or change state need your approval (Approve/Reject in the Tasks UI or via
+`POST /api/tasks/{id}/approve`). Cancel/pause/resume via
+`/api/tasks/{id}/{cancel,pause,resume}`. Per-task cost/token/time budgets are
+enforced — a breach pauses the task with an explanation. Task checkpoints live
+in `CHECKPOINT_PATH` (default `./checkpoints.db`); a restart marks orphaned
+tasks `paused` so they can resume.
 
 ## Notes
 

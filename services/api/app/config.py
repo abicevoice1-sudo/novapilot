@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     task_max_tokens: int = 200_000
     task_max_wallclock_sec: int = 1800
 
+    # Agent task checkpoints (LangGraph checkpointer; SQLite file)
+    checkpoint_path: str = "./checkpoints.db"
+
     # Security: if NOVAPILOT_TOKEN is set, /api/* requires Bearer auth.
     # Unset = open (local dev default), with a logged warning.
     novapilot_token: str = ""

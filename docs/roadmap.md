@@ -24,14 +24,14 @@ Milestones ship as small, testable vertical slices. A milestone is **not complet
 
 **Acceptance:** chat works end to end with no key required *given a reachable model* (Ollama). Verified: 7 gateway tests + 8 API tests green, ruff clean, `npm run build` green, live smoke test (health/models/SSE chat/persistence). Without a model, the API returns a clear SSE error event — it never pretends.
 
-## Milestone 3 — Agent core
+## Milestone 3 — Agent core ✅ (2026-10-18)
 
-- [ ] LangGraph plan→act→verify loop; tool registry with JSON-schema validation
-- [ ] Task states (active/paused/failed/completed), cancellation, bounded retries
-- [ ] Approval gates via graph interrupts; signed tool receipts in audit log
-- [ ] Per-task budgets (tokens/calls/cost/time) enforced by the gateway
+- [x] LangGraph plan→execute→verify loop; tool registry with JSON-schema validation
+- [x] Task states (pending/running/waiting_approval/paused/failed/completed/cancelled), cancellation, pause/resume, bounded retries (3 attempts, backoff)
+- [x] Approval gates via graph interrupts; tool receipts on every call; SSE event stream + Tasks UI page
+- [x] Per-task budgets (cost/tokens/wall-clock) enforced by the gateway; breach pauses with explanation
 
-**Acceptance:** a 5-step task runs with streaming tool activity; killing it mid-run leaves a clean, resumable state; a budget breach pauses with an explanation.
+**Acceptance:** a 5-step task runs with streaming tool activity (live-verified: task → approval gate → approve → file written → completed); killing the process mid-run marks tasks `paused` ("interrupted by restart") and they resume from the SQLite checkpoint; a budget breach pauses the task with a `budget_exceeded` event explaining why.
 
 ## Milestone 4 — Memory
 

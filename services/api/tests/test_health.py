@@ -1,4 +1,4 @@
-"""Milestone 2 acceptance: config loads, health endpoint answers."""
+"""Milestone 3 acceptance: config loads, health endpoint answers."""
 
 from fastapi.testclient import TestClient
 
@@ -13,7 +13,7 @@ def test_health_ok():
     body = r.json()
     assert body["ok"] is True
     assert body["service"] == "novapilot-api"
-    assert body["milestone"] == 2
+    assert body["milestone"] == 3
 
 
 def test_settings_defaults():

@@ -87,6 +87,10 @@ class ModelGateway:
     def usage(self) -> dict:
         return {"cost_usd": round(self.cost_usd, 6), "tokens": self.tokens}
 
+    def check_budget(self) -> None:
+        """Public budget gate: raises BudgetExceeded before a call that can't be afforded."""
+        self._check_budget()
+
     def _chain(self, model: str | None) -> list[str]:
         chain = [model or self.default_model]
         chain += [m for m in self.fallbacks if m not in chain]
