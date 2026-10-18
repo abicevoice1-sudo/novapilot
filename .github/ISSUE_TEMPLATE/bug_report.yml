@@ -1,0 +1,19 @@
+name: Bug report
+description: Something broken? Tell us how to reproduce it.
+body:
+  - type: textarea
+    attributes:
+      label: What happened
+      description: What you saw vs what you expected.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Reproduction steps
+      description: Exact steps. Include your install method and OS.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Logs
+      description: Relevant output from .actlet.log or the UI.

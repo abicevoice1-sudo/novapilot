@@ -1,0 +1,20 @@
+name: Feature request
+description: Propose a feature or integration.
+body:
+  - type: textarea
+    attributes:
+      label: What should Actlet do
+      description: The capability, in user terms.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Why it matters
+      description: Who benefits and how.
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      label: Safety check
+      options:
+        - label: This feature respects the approval-gate model (consequential actions need user approval)
