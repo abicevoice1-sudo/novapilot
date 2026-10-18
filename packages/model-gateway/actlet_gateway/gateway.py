@@ -39,14 +39,44 @@ class ModelInfo:
 
 
 DEFAULT_CATALOG: tuple[ModelInfo, ...] = (
+    # $0, no key, no signup — local.
     ModelInfo("ollama/gpt-oss:20b", "GPT-OSS 20B (local Ollama)", "ollama", True),
+    # Permanent free tiers, no credit card (verified Oct 2026).
     ModelInfo("groq/gpt-oss-120b", "GPT-OSS 120B (Groq free tier)", "groq", True),
     ModelInfo("gemini/gemini-2.5-flash", "Gemini 2.5 Flash (AI Studio free tier)", "gemini", True),
     ModelInfo("openrouter/qwen/qwen3-32b:free", "Qwen3 32B (OpenRouter free)", "openrouter", True),
+    ModelInfo("cerebras/llama-3.3-70b", "Llama 3.3 70B (Cerebras free tier)", "cerebras", True),
+    ModelInfo("mistral/mistral-small-latest", "Mistral Small (Experiment tier)", "mistral", True),
     ModelInfo(
         "nvidia_nim/nvidia/llama-3.1-nemotron-70b-instruct",
         "Nemotron 70B (NVIDIA NIM, free credits)",
         "nvidia",
+        True,
+    ),
+    ModelInfo("cohere/command-r-plus", "Command R+ (Cohere free trial)", "cohere", True),
+    # Free with key — generous trials/credits (verified Oct 2026).
+    ModelInfo(
+        "huggingface/meta-llama/Llama-3.3-70B-Instruct",
+        "Llama 3.3 70B (HuggingFace Inference)",
+        "huggingface",
+        True,
+    ),
+    ModelInfo(
+        "together_ai/meta-llama/Llama-3.3-70B-Instruct-Turbo",
+        "Llama 3.3 70B (Together AI credits)",
+        "together_ai",
+        True,
+    ),
+    ModelInfo(
+        "fireworks_ai/accounts/fireworks/models/llama-v3p3-70b-instruct",
+        "Llama 3.3 70B (Fireworks AI credits)",
+        "fireworks_ai",
+        True,
+    ),
+    ModelInfo(
+        "cloudflare/@cf/meta/llama-3.1-8b-instruct",
+        "Llama 3.1 8B (Cloudflare Workers AI)",
+        "cloudflare",
         True,
     ),
 )
