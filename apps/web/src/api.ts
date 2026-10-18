@@ -455,3 +455,61 @@ export const runScheduleNow = (id: string) =>
     `/api/schedules/${encodeURIComponent(id)}/run-now`,
     { method: 'POST' },
   )
+
+/* ------------------------------------------------------------------ */
+/* Skills + dreaming (Milestone 6 contract)                             */
+/* ------------------------------------------------------------------ */
+
+export interface Skill {
+  name: string
+  description: string
+  instructions: string
+  tools: string[]
+  created_from: string[]
+  use_count: number
+}
+
+export interface SkillCreate {
+  name: string
+  description: string
+  instructions: string
+  tools?: string[]
+}
+
+export interface DreamFact {
+  id: string
+  content: string
+}
+
+export interface DreamResult {
+  tasks_considered: number
+  facts_stored: number
+  facts: DreamFact[]
+}
+
+export interface MakeSkillResult {
+  skipped: boolean
+  name?: string
+}
+
+export const getSkills = () => request<{ skills: Skill[] }>('/api/skills')
+
+export const createSkill = (body: SkillCreate) =>
+  request<Skill>('/api/skills', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+
+export const deleteSkill = (name: string) =>
+  request<{ deleted: boolean }>(`/api/skills/${encodeURIComponent(name)}`, {
+    method: 'DELETE',
+  })
+
+export const runDreaming = () =>
+  request<DreamResult>('/api/dreaming/run', { method: 'POST' })
+
+export const makeSkill = (taskId: string) =>
+  request<MakeSkillResult>(`/api/tasks/${encodeURIComponent(taskId)}/make-skill`, {
+    method: 'POST',
+  })

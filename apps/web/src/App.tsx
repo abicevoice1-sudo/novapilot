@@ -5,6 +5,7 @@ import Tasks from './pages/Tasks'
 import TaskDetail from './pages/TaskDetail'
 import MemoryPage from './pages/Memory'
 import Schedules from './pages/Schedules'
+import Skills from './pages/Skills'
 import { getHealth } from './api'
 
 type Route =
@@ -14,11 +15,13 @@ type Route =
   | { name: 'task'; id: string }
   | { name: 'memory' }
   | { name: 'schedules' }
+  | { name: 'skills' }
 
 function parseRoute(pathname: string): Route {
   if (pathname === '/settings') return { name: 'settings' }
   if (pathname === '/memory') return { name: 'memory' }
   if (pathname === '/schedules') return { name: 'schedules' }
+  if (pathname === '/skills') return { name: 'skills' }
   if (pathname === '/tasks') return { name: 'tasks' }
   const m = /^\/tasks\/([^/]+)$/.exec(pathname)
   if (m) return { name: 'task', id: decodeURIComponent(m[1]) }
@@ -90,6 +93,7 @@ export default function App(): React.ReactElement {
           {link('/tasks', 'Tasks', route.name === 'tasks' || route.name === 'task')}
           {link('/memory', 'Memory', route.name === 'memory')}
           {link('/schedules', 'Schedules', route.name === 'schedules')}
+          {link('/skills', 'Skills', route.name === 'skills')}
           {link('/settings', 'Settings', route.name === 'settings')}
         </nav>
         <div className="ml-auto flex items-center gap-2">
@@ -107,6 +111,8 @@ export default function App(): React.ReactElement {
           <MemoryPage />
         ) : route.name === 'schedules' ? (
           <Schedules onOpenTask={(id) => navigate(`/tasks/${encodeURIComponent(id)}`)} />
+        ) : route.name === 'skills' ? (
+          <Skills />
         ) : (
           <Chat />
         )}

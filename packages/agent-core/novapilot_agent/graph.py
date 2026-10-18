@@ -37,7 +37,7 @@ Rules:
 - Prefer read-only tools; use write_file only to produce a deliverable the goal asks for.
 - Verify as you go (e.g. read back a file you wrote).
 - Never invent tool names or args.
-
+{skills_block}
 TOOLS:
 {tools}
 
@@ -104,13 +104,30 @@ def _validate_plan(plan: list[dict], registry: ToolRegistry) -> list[dict]:
     return steps
 
 
-def _plan_node(registry: ToolRegistry) -> Any:
+def _plan_node(registry: ToolRegistry, skills_provider=None) -> Any:
     async def plan(state: AgentState, config: RunnableConfig) -> dict:
         await _emit(config, "task_started", {"goal": state["goal"]})
         gateway = _cfg(config)["gateway"]
         model = state.get("model")
         specs = json.dumps(registry.specs())
-        prompt = PLANNER_PROMPT.format(max_steps=MAX_PLAN_STEPS, tools=specs, goal=state["goal"])
+        skills_block = ""
+        if skills_provider is not None:
+            try:
+                skills = skills_provider(state["goal"]) or []
+            except Exception:  # noqa: BLE001 — skills must never break planning
+                skills = []
+            if skills:
+                lines = "\n".join(
+                    f"- {s['name']}: {s.get('description', '')}" for s in skills[:5]
+                )
+                skills_block = (
+                    "\nLearned SKILLS from past work (follow their instructions when relevant):\n"
+                    + lines
+                )
+        prompt = PLANNER_PROMPT.format(
+            max_steps=MAX_PLAN_STEPS, tools=specs, goal=state["goal"],
+            skills_block=skills_block,
+        )
         last_err = ""
         for attempt in range(2):
             try:
@@ -261,10 +278,10 @@ def _route(state: AgentState) -> str:
     return "execute"
 
 
-def build_graph(registry: ToolRegistry, checkpointer=None):
+def build_graph(registry: ToolRegistry, checkpointer=None, skills_provider=None):
     """Build the agent graph. checkpointer injectable (InMemorySaver in tests)."""
     builder = StateGraph(AgentState)
-    builder.add_node("plan", _plan_node(registry))
+    builder.add_node("plan", _plan_node(registry, skills_provider))
     builder.add_node("execute", _execute_node(registry))
     builder.add_node("summarize", _summarize_node())
     builder.add_edge(START, "plan")

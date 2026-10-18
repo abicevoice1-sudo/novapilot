@@ -12,6 +12,7 @@ from novapilot_gateway import ModelGateway
 from novapilot_memory.tools import register_memory_tools
 
 from .config import settings
+from .learning import skills_provider
 from .task_store import SqlTaskStore
 
 _runner: TaskRunner | None = None
@@ -60,6 +61,7 @@ def build_runner(memory_service) -> TaskRunner:
         registry=registry,
         store=SqlTaskStore(),
         checkpoint_path=settings.checkpoint_path,
+        skills_provider=skills_provider,
     )
 
 

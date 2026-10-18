@@ -77,6 +77,23 @@ Deferred: file sandbox tightening (Docker), injection evals — folded into M7.
 NL parsed, bad input 422'd. 9 package + 7 API tests green; full suite stable
 across 5 consecutive runs (38 tests).
 
+## Phase B — Learning loop ✅ (2026-10-18)
+
+- [x] `novapilot-learning` package: `DreamConsolidator` (task summaries →
+      durable facts via memory service, bad JSON dropped never stored),
+      `SkillStore` (SKILL.md with YAML frontmatter, keyword-relevant lookup)
+- [x] Planner receives relevant skills automatically (`skills_provider`
+      plumbed through TaskRunner → build_graph → plan node; broken providers
+      can't break planning)
+- [x] API: `/api/skills` CRUD, `POST /api/dreaming/run`, `POST /api/tasks/{id}/make-skill`
+- [x] Nightly dreaming auto-schedule (02:00) created on first boot
+- [x] Skills UI page + "Run dreaming now" + "Make skill" button on tasks
+- [x] docs/learning.md
+
+**Acceptance:** live-verified — task completed → dreaming stored 1 fact →
+fact searchable in memory → make-skill created `note-reader` SKILL.md →
+planner skill matching confirmed. 9 learning + 4 API tests green.
+
 **Acceptance:** a scheduled research job runs, emails the result, survives a restart; user can pause everything with one switch.
 
 ## Milestone 7 — Integrations & multi-agent

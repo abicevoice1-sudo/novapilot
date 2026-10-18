@@ -4,6 +4,7 @@ import {
   approveTask,
   cancelTask,
   getTask,
+  makeSkill,
   pauseTask,
   resumeTask,
   shotNameOf,
@@ -127,6 +128,8 @@ export default function TaskDetail({ id, onBack }: TaskDetailProps): React.React
   const [pendingApproval, setPendingApproval] = useState<TaskStep | null>(null)
   const [acting, setActing] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [makingSkill, setMakingSkill] = useState(false)
+  const [makeSkillMsg, setMakeSkillMsg] = useState<string | null>(null)
 
   const feedRef = useRef<HTMLDivElement>(null)
   const keyRef = useRef(0)
@@ -253,6 +256,25 @@ export default function TaskDetail({ id, onBack }: TaskDetailProps): React.React
     },
     [],
   )
+
+  // Distill a completed task into a reusable skill. Disabled with a tooltip
+  // until the task is completed — the backend 400s otherwise.
+  const handleMakeSkill = async () => {
+    setMakingSkill(true)
+    setMakeSkillMsg(null)
+    try {
+      const res = await makeSkill(id)
+      if (res.skipped) {
+        setMakeSkillMsg('Task too one-off to generalize — no skill created.')
+      } else {
+        setMakeSkillMsg(`Skill '${res.name}' created.`)
+      }
+    } catch (e) {
+      setMakeSkillMsg(`Couldn't make a skill: ${e instanceof Error ? e.message : 'unknown error'}`)
+    } finally {
+      setMakingSkill(false)
+    }
+  }
 
   if (loadError) {
     return (
@@ -427,6 +449,23 @@ export default function TaskDetail({ id, onBack }: TaskDetailProps): React.React
           </button>
         </div>
       )}
+
+      {/* Distill a completed task into a reusable skill */}
+      <div className="mb-4">
+        <button
+          onClick={() => void handleMakeSkill()}
+          disabled={makingSkill || detail.status !== 'completed'}
+          title={
+            detail.status === 'completed'
+              ? 'Distill this task into a reusable skill'
+              : 'Only completed tasks can be distilled into skills'
+          }
+          className="rounded-lg border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {makingSkill ? 'Distilling…' : '🧠 Make skill'}
+        </button>
+        {makeSkillMsg && <p className="mt-2 text-sm text-zinc-400">{makeSkillMsg}</p>}
+      </div>
 
       <div className="grid min-h-0 flex-1 gap-4 md:grid-cols-2">
         {/* Steps */}

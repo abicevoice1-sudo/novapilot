@@ -23,6 +23,8 @@ log = logging.getLogger("novapilot.scheduler")
 
 _service: SchedulerService | None = None
 
+DREAMING_SCHEDULE_ID = "nightly-dreaming"
+
 
 def _aware(dt: datetime | None) -> datetime | None:
     # SQLite returns naive datetimes; treat them as UTC.
@@ -70,6 +72,25 @@ def _serialize(row: ScheduleRow) -> dict:
 async def _fire(schedule: Schedule) -> None:
     from .agent import get_runner
 
+    if schedule.id == DREAMING_SCHEDULE_ID:
+        from .learning import run_dreaming
+
+        log.info("nightly dreaming fired")
+        try:
+            result = await run_dreaming()
+            log.info("dreaming done: %s", result)
+        except Exception:
+            log.exception("nightly dreaming failed")
+        schedule.last_task_id = None
+        async with SessionLocal() as s:
+            row = await s.get(ScheduleRow, schedule.id)
+            if row is not None:
+                row.last_run_at = datetime.now(UTC)
+                row.run_count = schedule.run_count
+                row.next_run_at = schedule.next_run_at
+                await s.commit()
+        return
+
     log.info("schedule %s firing -> task (preapproved=%s)", schedule.id, schedule.preapproved_tools)
     task_id = await get_runner().create_task(
         schedule.goal,
@@ -110,6 +131,19 @@ async def start_scheduler() -> None:
             model = _to_model(row)
             nxt = _service.register(model)
             row.next_run_at = nxt
+        # Nightly dreaming: consolidate recent work into durable memories.
+        if await s.get(ScheduleRow, DREAMING_SCHEDULE_ID) is None:
+            dream_row = ScheduleRow(
+                id=DREAMING_SCHEDULE_ID,
+                name="Nightly dreaming",
+                goal="Consolidate recent completed work into durable long-term memories.",
+                cron="0 2 * * *",
+            )
+            s.add(dream_row)
+            await s.flush()
+            nxt = _service.register(_to_model(dream_row))
+            dream_row.next_run_at = nxt
+            log.info("created nightly dreaming schedule (02:00)")
         await s.commit()
     log.info("scheduler loaded %d enabled schedule(s)", len(rows))
 

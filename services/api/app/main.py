@@ -16,7 +16,17 @@ from .auth import auth_warning
 from .config import settings
 from .db import init_db
 from .logging_config import configure_logging
-from .routers import chat, conversations, memories, models, schedules, shots, tasks
+from .routers import (
+    chat,
+    conversations,
+    dreaming,
+    memories,
+    models,
+    schedules,
+    shots,
+    skills,
+    tasks,
+)
 
 configure_logging(settings.log_level)
 
@@ -56,6 +66,8 @@ app.include_router(tasks.router)
 app.include_router(memories.router)
 app.include_router(shots.router)
 app.include_router(schedules.router)
+app.include_router(skills.router)
+app.include_router(dreaming.router)
 
 
 @app.get("/health")

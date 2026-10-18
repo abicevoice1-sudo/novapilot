@@ -118,3 +118,38 @@ async def test_unknown_tool_in_plan_fails():
     graph = build_graph(_registry(), checkpointer=InMemorySaver())
     result = await graph.ainvoke({"goal": "x"}, _config(gw))
     assert result["status"] == "failed"
+
+
+async def test_planner_receives_relevant_skills():
+    seen_prompts = []
+
+    class _SpyGateway:
+        async def chat(self, messages, model=None):
+            seen_prompts.append(messages[-1]["content"])
+            return _plan_json([("say hi", "echo_tool", {"text": "hi"})])
+
+        def check_budget(self):
+            pass
+
+        def usage(self):
+            return {}
+
+    def provider(goal):
+        assert "greet" in goal
+        return [{"name": "greeter", "description": "Greet people warmly"}]
+
+    graph = build_graph(_registry(), checkpointer=InMemorySaver(), skills_provider=provider)
+    result = await graph.ainvoke({"goal": "greet Syed"}, _config(_SpyGateway()))
+    assert result["status"] == "completed"
+    assert "greeter" in seen_prompts[0]
+    assert "Greet people warmly" in seen_prompts[0]
+
+
+async def test_planner_survives_broken_skills_provider():
+    def bad_provider(goal):
+        raise RuntimeError("boom")
+
+    gw = ScriptedGateway(scripts=[_plan_json([("say hi", "echo_tool", {"text": "hi"})]), "done"])
+    graph = build_graph(_registry(), checkpointer=InMemorySaver(), skills_provider=bad_provider)
+    result = await graph.ainvoke({"goal": "x"}, _config(gw))
+    assert result["status"] == "completed"
