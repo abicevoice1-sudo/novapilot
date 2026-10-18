@@ -43,6 +43,12 @@ DEFAULT_CATALOG: tuple[ModelInfo, ...] = (
     ModelInfo("groq/gpt-oss-120b", "GPT-OSS 120B (Groq free tier)", "groq", True),
     ModelInfo("gemini/gemini-2.5-flash", "Gemini 2.5 Flash (AI Studio free tier)", "gemini", True),
     ModelInfo("openrouter/qwen/qwen3-32b:free", "Qwen3 32B (OpenRouter free)", "openrouter", True),
+    ModelInfo(
+        "nvidia_nim/nvidia/llama-3.1-nemotron-70b-instruct",
+        "Nemotron 70B (NVIDIA NIM, free credits)",
+        "nvidia",
+        True,
+    ),
 )
 
 
