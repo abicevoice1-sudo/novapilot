@@ -56,6 +56,13 @@ def build_runner(memory_service) -> TaskRunner:
     registry = builtin_registry()
     register_memory_tools(registry, memory_service, lambda: settings.memory_namespace)
     register_browser_tools(registry, get_browser_session)
+    if settings.gmail_address and settings.gmail_app_password:
+        from novapilot_gmail import GmailClient, register_gmail_tools
+
+        def _gmail_factory() -> GmailClient:
+            return GmailClient(settings.gmail_address, settings.gmail_app_password)
+
+        register_gmail_tools(registry, _gmail_factory)
 
     def gateway_factory() -> ModelGateway:
         return ModelGateway(

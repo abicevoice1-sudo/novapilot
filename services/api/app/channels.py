@@ -21,7 +21,7 @@ _manager = None
 
 class ChannelManager:
     def __init__(self) -> None:
-        self.channels: dict[str, TelegramChannel] = {}
+        self.channels: dict = {}
         self._watchers: set[asyncio.Task] = set()
 
     def configure(self) -> None:
@@ -33,6 +33,20 @@ class ChannelManager:
             self.channels["telegram"] = TelegramChannel(token, allowed_users=allowed)
             log.info("telegram channel configured (allowed_users=%s)",
                      sorted(allowed) or "anyone")
+        if settings.gmail_address and settings.gmail_app_password:
+            from novapilot_gmail import GmailChannel, GmailClient
+
+            def _factory() -> GmailClient:
+                return GmailClient(settings.gmail_address, settings.gmail_app_password)
+
+            allowed_senders = {
+                s.strip().lower()
+                for s in (settings.gmail_allowed_senders or "").split(",")
+                if s.strip()
+            }
+            self.channels["gmail"] = GmailChannel(_factory, allowed_senders=allowed_senders)
+            log.info("gmail channel configured (allowed_senders=%s)",
+                     sorted(allowed_senders) or "anyone")
 
     async def start(self) -> None:
         for name, ch in self.channels.items():
@@ -60,8 +74,12 @@ class ChannelManager:
 
     async def _on_message(self, msg: InboundMessage) -> None:
         from .agent import get_runner
+        from .control import is_paused
 
         log.info("channel %s: message from %s", msg.channel, msg.sender_name)
+        if is_paused():
+            log.info("channel %s: ignoring message (agent paused)", msg.channel)
+            return
         task_id = await get_runner().create_task(
             msg.text, source=f"{msg.channel}:{msg.chat_id}"
         )

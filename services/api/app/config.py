@@ -42,6 +42,17 @@ class Settings(BaseSettings):
 
     # MCP servers (Phase C): JSON map of name -> {command, args}. Unset = none.
     mcp_servers: str = ""
+
+    # Gmail (Phase F): address + Google App Password. Unset = disabled.
+    gmail_address: str = ""
+    gmail_app_password: str = ""
+    # Comma-separated sender addresses allowed to trigger tasks. Empty = anyone.
+    gmail_allowed_senders: str = ""
+
+    # Quiet hours (Phase F): HH:MM local time. Schedules don't fire inside
+    # the window (run-now still works). Empty = no quiet hours.
+    quiet_hours_start: str = ""
+    quiet_hours_end: str = ""
     secret_key: str = "change-me"
 
     log_level: str = "INFO"

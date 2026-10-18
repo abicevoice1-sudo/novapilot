@@ -20,6 +20,7 @@ from .logging_config import configure_logging
 from .routers import (
     channels,
     chat,
+    control,
     conversations,
     dreaming,
     memories,
@@ -84,6 +85,7 @@ app.include_router(schedules.router)
 app.include_router(channels.router)
 app.include_router(skills.router)
 app.include_router(dreaming.router)
+app.include_router(control.router)
 
 
 @app.get("/health")

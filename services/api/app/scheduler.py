@@ -71,6 +71,14 @@ def _serialize(row: ScheduleRow) -> dict:
 
 async def _fire(schedule: Schedule) -> None:
     from .agent import get_runner
+    from .control import in_quiet_hours, is_paused
+
+    if is_paused():
+        log.info("schedule %s skipped (agent paused)", schedule.id)
+        return
+    if in_quiet_hours():
+        log.info("schedule %s skipped (quiet hours)", schedule.id)
+        return
 
     if schedule.id == DREAMING_SCHEDULE_ID:
         from .learning import run_dreaming

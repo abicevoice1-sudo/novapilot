@@ -151,6 +151,21 @@ write_file → checkpoint_created event → revert succeeds).
 
 **Acceptance:** v1.0.0 ships with passing suites, published evals, and a limitations page. No superiority claims without reproducible evidence.
 
+## Phase F — Gmail + agent control ✅ (2026-10-18)
+
+- [x] Gmail integration (`packages/gmail/`): stdlib IMAP/SMTP client,
+      `gmail_list` / `gmail_read` (low risk) + `gmail_send` (high risk,
+      approval-gated) agent tools, inbound channel (UNSEEN poll → fully-
+      supervised tasks, sender allowlist). 7 tests, mocked IMAP/SMTP.
+- [x] Global pause/resume (`POST /api/agent/pause|resume`, `GET /api/agent/status`):
+      scheduler skips firing and channels ignore inbound while paused.
+- [x] Quiet hours (`QUIET_HOURS_START/END`, HH:MM local): schedules don't fire
+      inside the window; run-now still works. 3 control tests.
+
+**Acceptance:** 7 gmail + 3 control tests green; 53 API tests green total;
+ruff clean. Honest limits: IMAP/SMTP untested against real Gmail here
+(needs a Google App Password); channel polling is 60s, not push.
+
 ## Principal technical risks & mitigations
 
 | Risk | Likelihood | Impact | Mitigation |
