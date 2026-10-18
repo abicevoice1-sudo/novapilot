@@ -60,6 +60,9 @@ def test_run_raises_when_unavailable():
 
 async def test_sandboxed_tool_fails_cleanly_without_docker(monkeypatch):
     monkeypatch.delenv("ACTLET_SANDBOX", raising=False)
+    # Simulate no Docker daemon (CI runners have Docker; force it off).
+    from actlet_agent import sandbox as _sandbox_mod
+    monkeypatch.setattr(_sandbox_mod.DockerSandbox, "available", staticmethod(lambda: False))
     # Register the tool manually to test its error path.
 
     from actlet_agent.tools import Tool, ToolRegistry, _SandboxShellArgs, _shell_sandboxed

@@ -57,7 +57,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install
-        run: pip install -e ./packages/model-gateway -e ./packages/agent-core -e ./packages/browser && pip install pytest pytest-asyncio ruff
+        run: pip install -e ./packages/model-gateway -e ./packages/agent-core -e ./packages/browser && pip install pytest pytest-asyncio ruff && playwright install chromium
       - name: Lint
         run: ruff check packages/browser
       - name: Browser tests
