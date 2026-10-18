@@ -49,15 +49,14 @@ PIP="$VENV/bin/pip"
 "$PIP" install -q --upgrade pip
 
 # --- Python packages ---
+# NOTE: no --no-deps. Every package declares its dependencies in pyproject.toml;
+# pip resolves them. If this fails, the install fails loudly — a half-installed
+# Actlet that crashes on startup is worse than no install.
 echo "==> Installing Actlet packages"
-"$PIP" install -q -e ./packages/model-gateway -e ./packages/agent-core \
+"$PIP" install -e ./packages/model-gateway -e ./packages/agent-core \
   -e ./packages/memory -e ./packages/scheduler -e ./packages/learning \
   -e ./packages/browser -e ./packages/channels -e ./packages/mcp \
-  -e ./packages/gmail -e ./packages/calendar -e ./services/api --no-deps
-"$PIP" install -q fastapi "uvicorn[standard]" sqlalchemy aiosqlite pydantic \
-  pydantic-settings sse-starlette langgraph langchain-core langgraph-checkpoint-sqlite \
-  httpx websockets python-multipart jinja2 caldav croniter greenlet tzlocal requests \
-  playwright 2>/dev/null || echo "    WARNING: some optional deps failed — core still works"
+  -e ./packages/gmail -e ./packages/calendar -e ./services/api
 echo "    done"
 
 # --- Playwright Chromium ---
@@ -107,7 +106,7 @@ else
   echo $! > "$PID_FILE"
   # Wait for health (max ~20s).
   for _ in $(seq 1 40); do
-    if curl -fsS -m 2 http://127.0.0.1:8000/api/health >/dev/null 2>&1; then
+    if curl -fsS -m 2 http://127.0.0.1:8000/health >/dev/null 2>&1; then
       break
     fi
     sleep 0.5
@@ -115,7 +114,7 @@ else
 fi
 
 URL="http://localhost:8000"
-if curl -fsS -m 2 http://127.0.0.1:8000/api/health >/dev/null 2>&1; then
+if curl -fsS -m 2 http://127.0.0.1:8000/health >/dev/null 2>&1; then
   echo ""
   echo "================================================================"
   echo "  ⚡ Actlet is running!"
