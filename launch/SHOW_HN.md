@@ -15,7 +15,7 @@ What it does:
 Install is one command — it installs, generates your token, starts the server, and opens your browser:
 
 ```
-curl -fsSL https://raw.githubusercontent.com/abicevoice1-sudo/actlet/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/hydope/actlet/master/install.sh | bash
 ```
 
 $0 by default (local Ollama). Apache-2.0.
@@ -24,4 +24,4 @@ The differentiator I'm proudest of: I researched 20 agent projects live before w
 
 Try to break the approval gates. I'd genuinely love to know if you can.
 
-https://github.com/abicevoice1-sudo/actlet
+https://github.com/hydope/actlet

@@ -17,11 +17,11 @@ Features:
 - Per-task cost/token/time budgets
 - One-command install, $0 with Ollama
 
-`curl -fsSL https://raw.githubusercontent.com/abicevoice1-sudo/actlet/master/install.sh | bash`
+`curl -fsSL https://raw.githubusercontent.com/hydope/actlet/master/install.sh | bash`
 
 I also published a 20-project comparison matrix in the repo showing exactly where it wins and loses. Happy to answer anything.
 
-https://github.com/abicevoice1-sudo/actlet
+https://github.com/hydope/actlet
 
 ---
 
@@ -36,4 +36,4 @@ The standout feature: approval gates on every consequential action, enforced in 
 
 One-command install. Would love feedback from the local-model crowd on the Ollama experience.
 
-https://github.com/abicevoice1-sudo/actlet
+https://github.com/hydope/actlet

@@ -33,7 +33,7 @@ It connects. Telegram, Slack, Gmail, calendar, any MCP server.
 **Tweet 5:**
 Install:
 
-curl -fsSL https://raw.githubusercontent.com/abicevoice1-sudo/actlet/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/hydope/actlet/master/install.sh | bash
 
 One command. Installs, starts, opens your browser. $0 with local models.
 
@@ -44,4 +44,4 @@ That's the philosophy: honesty as a feature.
 
 Apache-2.0. Try to break the approval gates — I want to know.
 
-github.com/abicevoice1-sudo/actlet
+github.com/hydope/actlet
