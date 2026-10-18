@@ -1,12 +1,17 @@
 [project]
 name = "novapilot-api"
-version = "0.1.0"
-description = "NovaPilot API service (Milestone 1 skeleton: config + health)"
+version = "0.2.0"
+description = "NovaPilot API service (Milestone 2: chat + gateway + persistence)"
 requires-python = ">=3.12"
 dependencies = [
   "fastapi>=0.115",
   "uvicorn[standard]>=0.30",
   "pydantic-settings>=2.5",
+  "sqlalchemy[asyncio]>=2.0",
+  "aiosqlite>=0.20",
+  "asyncpg>=0.29",
+  "litellm>=1.60",
+  # novapilot-gateway is installed separately (../packages/model-gateway)
 ]
 
 [project.optional-dependencies]
@@ -15,6 +20,10 @@ test = ["pytest>=8", "httpx>=0.27"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+
+[tool.ruff.lint]
+# B008 is a false positive for FastAPI: Depends() in defaults is the documented idiom.
+ignore = ["B008"]
 
 [build-system]
 requires = ["hatchling"]

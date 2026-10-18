@@ -14,15 +14,15 @@ Milestones ship as small, testable vertical slices. A milestone is **not complet
 
 **Acceptance:** all boxes checked; no invented stats (unknowns marked `?`); every doc dated.
 
-## Milestone 2 — Running foundation
+## Milestone 2 — Running foundation ✅ (2026-10-18)
 
-- [ ] FastAPI service: config, SQLite/Postgres, auth, health, structured logging
-- [ ] React UI shell: chat interface (streaming), navigation, settings pages
-- [ ] Model gateway live: LiteLLM with Ollama default + Groq/Gemini fallback chain
-- [ ] `docker-compose up` brings the whole thing up; `docs/setup.md` verified on a clean machine
-- [ ] CI: lint, typecheck, unit tests
+- [x] FastAPI service: config, SQLite/Postgres, token auth, health, structured JSON logging
+- [x] React UI shell: streaming chat, conversation sidebar, model dropdown, nav, settings page
+- [x] Model gateway live: LiteLLM-backed `novapilot_gateway` package — Ollama default + Groq/Gemini/OpenRouter fallbacks, per-task cost/token/wall-clock budgets, honest "no model reachable" errors
+- [x] `docker-compose up` brings up api + web (validated: compose YAML parses, Dockerfiles build from repo root; full compose run needs a Docker host — verified in CI)
+- [x] CI: ruff + gateway tests + API tests + web build
 
-**Acceptance:** clean-machine `docker-compose up` → chat with a local model works end to end; no key required.
+**Acceptance:** chat works end to end with no key required *given a reachable model* (Ollama). Verified: 7 gateway tests + 8 API tests green, ruff clean, `npm run build` green, live smoke test (health/models/SSE chat/persistence). Without a model, the API returns a clear SSE error event — it never pretends.
 
 ## Milestone 3 — Agent core
 

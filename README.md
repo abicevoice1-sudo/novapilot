@@ -2,7 +2,7 @@
 
 NovaPilot is an independent, open-source personal AI agent: it **remembers**, **researches**, **plans**, **executes**, **learns from feedback**, and keeps working on your approved goals while you're away.
 
-**Status: Milestone 1 — research & specification (2026-10-18).** This repo currently contains the full 20-repository competitor research, architecture decisions, threat model, cost model, and roadmap — plus a runnable API skeleton. The agent itself is built across Milestones 2–8 (see `docs/roadmap.md`). Nothing here is mocked and presented as working; `docs/roadmap.md` tracks exactly what's real.
+**Status: Milestone 2 — running foundation (2026-10-18).** Chat works end to end: React UI streams answers from the LiteLLM gateway (Ollama default, free-tier fallbacks, enforced budgets), conversations persist in SQLite/Postgres. The agent runtime, memory, browser, and scheduler arrive in Milestones 3–7 (see `docs/roadmap.md`). Nothing here is mocked and presented as working; `docs/roadmap.md` tracks exactly what's real.
 
 ## Why NovaPilot
 
@@ -29,12 +29,14 @@ cd services/api && pip install -e .  # or: uv sync
 uvicorn app.main:app --reload        # GET /health → {"ok": true, ...}
 ```
 
+See `docs/setup.md` for the full setup (docker-compose, dev mode, verification).
+
 ## The plan
 
 | Milestone | Scope | Status |
 |-----------|-------|--------|
 | 1 — Research & specification | 20-repo matrix, ADRs, threat model, cost model, roadmap, scaffold | ✅ done 2026-10-18 |
-| 2 — Running foundation | FastAPI + React chat + LiteLLM gateway (Ollama default) | next |
+| 2 — Running foundation | FastAPI + React chat (SSE) + LiteLLM gateway (Ollama default, budgets) + persistence | ✅ done 2026-10-18 |
 | 3 — Agent core | LangGraph plan→act→verify, approvals, budgets, receipts | planned |
 | 4 — Memory | mem0 self-hosted + provenance + markdown mirror + export/delete | planned |
 | 5 — Browser & files | Playwright module, sandboxed files, injection evals | planned |

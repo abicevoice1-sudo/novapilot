@@ -1,6 +1,8 @@
 services:
   api:
-    build: ./services/api
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
     ports:
       - "8000:8000"
     env_file: .env
@@ -10,9 +12,21 @@ services:
       DATABASE_URL: sqlite+aiosqlite:////data/novapilot.db
     restart: unless-stopped
 
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
   # Milestone 3+: worker (scheduler + background jobs)
   # worker:
-  #   build: ./services/worker
+  #   build:
+  #     context: .
+  #     dockerfile: services/worker/Dockerfile
   #   env_file: .env
   #   volumes:
   #     - novapilot-data:/data

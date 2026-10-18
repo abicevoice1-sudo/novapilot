@@ -1,27 +1,40 @@
-"""NovaPilot API — Milestone 1 skeleton.
+"""NovaPilot API — Milestone 2: running foundation.
 
-Implements exactly what Milestone 1 promises: configuration loading and a
-health endpoint. The agent runtime, memory, tools, and scheduler arrive in
-Milestones 2-7 (see docs/roadmap.md). Nothing is mocked as working.
+Chat (streaming SSE) + model catalog + conversation history, backed by the
+LiteLLM model gateway (Ollama default, free-tier fallbacks, enforced budgets).
 """
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from fastapi.middleware.cors import CORSMiddleware
+
+from .auth import auth_warning
+from .config import settings
+from .db import init_db
+from .logging_config import configure_logging
+from .routers import chat, conversations, models
+
+configure_logging(settings.log_level)
 
 
-class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-
-    app_name: str = "NovaPilot"
-    database_url: str = "sqlite+aiosqlite:///./novapilot.db"
-    model_default: str = "ollama/gpt-oss:20b"
-    task_max_cost_usd: float = 0.50
-    task_max_tokens: int = 200_000
-    task_max_wallclock_sec: int = 1800
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    auth_warning()
+    yield
 
 
-settings = Settings()
-app = FastAPI(title="NovaPilot API", version="0.1.0")
+app = FastAPI(title="NovaPilot API", version="0.2.0", lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.include_router(chat.router)
+app.include_router(models.router)
+app.include_router(conversations.router)
 
 
 @app.get("/health")
@@ -29,6 +42,6 @@ def health() -> dict:
     return {
         "ok": True,
         "service": "novapilot-api",
-        "milestone": 1,
+        "milestone": 2,
         "model_default": settings.model_default,
     }
