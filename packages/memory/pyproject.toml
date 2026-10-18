@@ -1,0 +1,30 @@
+[project]
+name = "novapilot-memory"
+version = "0.4.0"
+description = "NovaPilot memory: user-owned readable memory (embedded SQLite+FTS5 default, mem0 adapter optional)"
+requires-python = ">=3.12"
+dependencies = [
+  "aiosqlite>=0.20",
+  # novapilot-agent-core installed separately for the tool bindings
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "pytest-asyncio>=0.23"]
+mem0 = ["mem0ai>=2.0"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+ignore = ["B008"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["novapilot_memory"]

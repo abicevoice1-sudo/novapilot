@@ -3,6 +3,7 @@ import Chat from './pages/Chat'
 import Settings from './pages/Settings'
 import Tasks from './pages/Tasks'
 import TaskDetail from './pages/TaskDetail'
+import MemoryPage from './pages/Memory'
 import { getHealth } from './api'
 
 type Route =
@@ -10,9 +11,11 @@ type Route =
   | { name: 'settings' }
   | { name: 'tasks' }
   | { name: 'task'; id: string }
+  | { name: 'memory' }
 
 function parseRoute(pathname: string): Route {
   if (pathname === '/settings') return { name: 'settings' }
+  if (pathname === '/memory') return { name: 'memory' }
   if (pathname === '/tasks') return { name: 'tasks' }
   const m = /^\/tasks\/([^/]+)$/.exec(pathname)
   if (m) return { name: 'task', id: decodeURIComponent(m[1]) }
@@ -82,6 +85,7 @@ export default function App(): React.ReactElement {
         <nav className="flex items-center gap-1">
           {link('/', 'Chat', route.name === 'chat')}
           {link('/tasks', 'Tasks', route.name === 'tasks' || route.name === 'task')}
+          {link('/memory', 'Memory', route.name === 'memory')}
           {link('/settings', 'Settings', route.name === 'settings')}
         </nav>
         <div className="ml-auto flex items-center gap-2">
@@ -95,6 +99,8 @@ export default function App(): React.ReactElement {
           <Tasks onOpenTask={(id) => navigate(`/tasks/${encodeURIComponent(id)}`)} />
         ) : route.name === 'task' ? (
           <TaskDetail key={route.id} id={route.id} onBack={() => navigate('/tasks')} />
+        ) : route.name === 'memory' ? (
+          <MemoryPage />
         ) : (
           <Chat />
         )}

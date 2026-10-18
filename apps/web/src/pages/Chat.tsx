@@ -3,6 +3,7 @@ import {
   ChatMessage,
   Conversation,
   ModelInfo,
+  extractMemories,
   getConversationMessages,
   getConversations,
   getModels,
@@ -22,9 +23,12 @@ export default function Chat(): React.ReactElement {
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [remembering, setRemembering] = useState(false)
+  const [rememberNote, setRememberNote] = useState<string | null>(null)
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const rememberTimer = useRef<number | null>(null)
 
   // Load models + conversation list on mount.
   useEffect(() => {
@@ -138,6 +142,30 @@ export default function Chat(): React.ReactElement {
 
   const canSend = !streaming && input.trim().length > 0 && models.length > 0
 
+  const remember = useCallback(async () => {
+    if (!currentId || streaming || remembering) return
+    setRemembering(true)
+    setRememberNote(null)
+    try {
+      const r = await extractMemories(currentId)
+      setRememberNote(`Remembered ${r.count} ${r.count === 1 ? 'thing' : 'things'}`)
+    } catch (e) {
+      setRememberNote(e instanceof Error ? e.message : 'Could not extract memories')
+    } finally {
+      setRemembering(false)
+      if (rememberTimer.current) window.clearTimeout(rememberTimer.current)
+      rememberTimer.current = window.setTimeout(() => setRememberNote(null), 6000)
+    }
+  }, [currentId, streaming, remembering])
+
+  // Clear the pending timer on unmount.
+  useEffect(
+    () => () => {
+      if (rememberTimer.current) window.clearTimeout(rememberTimer.current)
+    },
+    [],
+  )
+
   return (
     <div className="flex h-full">
       {/* Sidebar */}
@@ -205,6 +233,23 @@ export default function Chat(): React.ReactElement {
                 </option>
               ))}
             </select>
+          )}
+          <button
+            onClick={() => void remember()}
+            disabled={!currentId || streaming || remembering}
+            title={
+              currentId
+                ? 'Ask Nova to extract lasting memories from this conversation'
+                : 'Open a conversation first'
+            }
+            className="rounded-lg px-3 py-1.5 text-sm text-zinc-400 transition hover:bg-zinc-900 hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {remembering ? '…' : '🧠 Remember this'}
+          </button>
+          {rememberNote && (
+            <span className="max-w-xs truncate text-xs text-zinc-500" title={rememberNote}>
+              {rememberNote}
+            </span>
           )}
           <button
             onClick={newChat}

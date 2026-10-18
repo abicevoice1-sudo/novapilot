@@ -11,12 +11,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .agent import get_runner
+from .agent import get_runner_or_none
 from .auth import auth_warning
 from .config import settings
 from .db import init_db
 from .logging_config import configure_logging
-from .routers import chat, conversations, models, tasks
+from .routers import chat, conversations, memories, models, tasks
 
 configure_logging(settings.log_level)
 
@@ -25,10 +25,17 @@ configure_logging(settings.log_level)
 async def lifespan(app: FastAPI):
     await init_db()
     auth_warning()
-    runner = get_runner()
+    from .agent import build_runner, override_runner
+    from .memory import close_memory_service, get_memory_service
+
+    if get_runner_or_none() is None:  # tests may inject their own runner
+        memory_svc = await get_memory_service()
+        override_runner(build_runner(memory_svc))
+    runner = get_runner_or_none()
     await runner.reconcile()  # tasks orphaned by a restart become resumable
     yield
     await runner.aclose()
+    await close_memory_service()
 
 
 app = FastAPI(title="NovaPilot API", version="0.2.0", lifespan=lifespan)
@@ -42,6 +49,7 @@ app.include_router(chat.router)
 app.include_router(models.router)
 app.include_router(conversations.router)
 app.include_router(tasks.router)
+app.include_router(memories.router)
 
 
 @app.get("/health")

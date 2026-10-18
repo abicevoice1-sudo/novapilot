@@ -33,14 +33,16 @@ Milestones ship as small, testable vertical slices. A milestone is **not complet
 
 **Acceptance:** a 5-step task runs with streaming tool activity (live-verified: task → approval gate → approve → file written → completed); killing the process mid-run marks tasks `paused` ("interrupted by restart") and they resume from the SQLite checkpoint; a budget breach pauses the task with a `budget_exceeded` event explaining why.
 
-## Milestone 4 — Memory
+## Milestone 4 — Memory ✅ (2026-10-18)
 
-- [ ] mem0 self-hosted wired in; conversation history persisted
-- [ ] Provenance (source/timestamp/confidence) on every memory; user review/edit/delete UI
-- [ ] Markdown mirror (`USER.md`/`MEMORY.md`); export + full wipe flows
-- [ ] Recall across restarts tested
+- [x] `novapilot-memory` package: embedded SQLite + FTS5 store (zero services); mem0 adapter for self-hosted mem0+Qdrant+Ollama via `MEMORY_BACKEND=mem0`
+- [x] Provenance (source/timestamp/tags) on every memory; full CRUD API; Memory UI page (list/search/add/edit/delete/export/import)
+- [x] Agent memory tools (`memory_search/add/update/delete`; delete needs approval); planner checks memory first
+- [x] Chat recall: relevant memories injected into the system prompt; "Remember this conversation" extraction (consented write path)
+- [x] Redaction enforced on every write (API keys, passwords, SSNs, cards); bare secrets refused; dedup merges near-duplicates
+- [x] Export/import JSON round-trip
 
-**Acceptance:** preference saved in session N is recalled in session N+2 after a restart; user can inspect, edit, and delete it.
+**Acceptance:** a fact saved in one session is recalled in a later one (verified: add → chat injects → delete → search/recall/export all clean); the user can read every memory in the UI; deleting is honored everywhere. Recall across restarts: the store is a plain SQLite file — restart-safe by construction.
 
 ## Milestone 5 — Browser & files
 

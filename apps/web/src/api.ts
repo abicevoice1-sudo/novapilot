@@ -56,7 +56,16 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     throw new Error('Cannot reach the NovaPilot backend (is it running?)')
   }
   if (!res.ok) {
-    throw new Error(`Backend error ${res.status} on ${path}`)
+    // Surface the backend's own message when it explains itself (e.g. 400 on a bare secret).
+    let detail = ''
+    try {
+      const body = (await res.json()) as Record<string, unknown>
+      const m = body.message ?? body.detail ?? body.error
+      if (typeof m === 'string' && m) detail = `: ${m}`
+    } catch {
+      /* not JSON — keep the generic message */
+    }
+    throw new Error(`Backend error ${res.status} on ${path}${detail}`)
   }
   return (await res.json()) as T
 }
@@ -294,3 +303,77 @@ export async function streamTaskEvents(
     }
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Memory (Milestone 4 contract)                                       */
+/* ------------------------------------------------------------------ */
+
+export interface Memory {
+  id: string
+  content: string
+  tags: string[]
+  source: string
+  created_at: string
+  updated_at: string
+}
+
+export interface MemoryList {
+  memories: Memory[]
+  total: number
+  query?: string
+}
+
+export const getMemories = (q?: string, limit?: number, offset?: number) => {
+  const params = new URLSearchParams()
+  if (q) params.set('q', q)
+  if (limit !== undefined) params.set('limit', String(limit))
+  if (offset !== undefined) params.set('offset', String(offset))
+  const qs = params.toString()
+  return request<MemoryList>(`/api/memories${qs ? `?${qs}` : ''}`)
+}
+
+export const addMemory = (content: string, tags: string[]) =>
+  request<{ memory: Memory; merged: boolean }>('/api/memories', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content, tags }),
+  })
+
+export const getMemory = (id: string) =>
+  request<Memory>(`/api/memories/${encodeURIComponent(id)}`)
+
+export const updateMemory = (id: string, content?: string, tags?: string[]) =>
+  request<Memory>(`/api/memories/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content, tags }),
+  })
+
+export const deleteMemory = (id: string) =>
+  request<{ deleted: boolean }>(`/api/memories/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  })
+
+export interface MemoryExport {
+  memories: { content: string; tags: string[]; source: string }[]
+}
+
+export const exportMemories = () => request<MemoryExport>('/api/memories/export')
+
+export interface MemoryImportEntry {
+  content: string
+  tags?: string[]
+}
+
+export const importMemories = (memories: MemoryImportEntry[]) =>
+  request<{ added: number; merged: number; skipped: number }>('/api/memories/import', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ memories }),
+  })
+
+export const extractMemories = (conversationId: string) =>
+  request<{ added: Memory[]; count: number }>(
+    `/api/conversations/${encodeURIComponent(conversationId)}/extract-memories`,
+    { method: 'POST' },
+  )

@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     # Agent task checkpoints (LangGraph checkpointer; SQLite file)
     checkpoint_path: str = "./checkpoints.db"
 
+    # Memory (M4)
+    memory_path: str = "./memories.db"
+    memory_namespace: str = "default"
+
     # Security: if NOVAPILOT_TOKEN is set, /api/* requires Bearer auth.
     # Unset = open (local dev default), with a logged warning.
     novapilot_token: str = ""

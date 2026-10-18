@@ -32,6 +32,8 @@ PLANNER_PROMPT = """You are NovaPilot's planner. Break the goal into concrete st
 Return ONLY a JSON array. Each step: {{"description": "...", "tool": "<name>", "args": {{...}}}}.
 Rules:
 - 3 to {max_steps} steps. Args must match each tool's JSON schema.
+- When the goal refers to the user's preferences, history, or past work, call
+  memory_search first — the user owns a long-term memory, use it.
 - Prefer read-only tools; use write_file only to produce a deliverable the goal asks for.
 - Verify as you go (e.g. read back a file you wrote).
 - Never invent tool names or args.

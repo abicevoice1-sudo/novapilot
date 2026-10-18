@@ -57,6 +57,22 @@ async def chat(
     payload = [{"role": m.role, "content": m.content} for m in req.messages]
     conv_id = conv.id
 
+    # Recall: inject relevant long-term memories so Nova remembers last week.
+    # Best-effort — chat works fine if memory is unavailable.
+    try:
+        from ..config import settings as _settings
+        from ..memory import get_memory_service as _get_mem
+        from .memories import build_memory_context as _ctx
+
+        _svc = await _get_mem()
+        _last_user = next((m.content for m in reversed(req.messages) if m.role == "user"), "")
+        if _last_user:
+            _hits = await _svc.recall(_settings.memory_namespace, _last_user, limit=5)
+            if _hits:
+                payload = [{"role": "system", "content": _ctx(_hits)}, *payload]
+    except Exception:
+        log.debug("memory recall skipped", exc_info=True)
+
     async def gen():
         yield _sse({"type": "started", "conversation_id": conv_id})
         parts: list[str] = []
