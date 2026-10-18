@@ -76,17 +76,18 @@ Weights reflect what a *personal* agent lives or dies on: memory ×1.5, autonomo
 | Rank | Product | Weighted score /10 | One-line read |
 |------|---------|-------------------:|---------------|
 | 1 | **hermes-agent** | **7.78** | Strongest all-rounder: learning loop + local models + proactivity. Weakness: enormous scope, release-mishap history. |
-| 2 | **zeroclaw** | **7.62** | Best trust story: tiered autonomy + tool receipts + OS sandboxes. Weakness: no multi-agent, 1k-issue backlog. |
-| 3 | **letta** | **7.60** | Best memory architecture anywhere (blocks + MemFS + dreaming). Weakness: cloud-default lock-in, repo split. |
-| 4 | **agent-zero** | **7.31** | Best computer-use (full XFCE desktop + Time Travel). Weakness: safety = user discipline; no goal/proactive loop. |
-| 5 | **openclaw** | **7.27** | Biggest ecosystem (ClawHub, 20+ channels). Weakness: host-exec default, scale complexity. |
-| 6 | **nanoMuse** | **7.09** | Best phone-first UX + human-takeover logins. Weakness: 3 weeks old, thin reliability record. |
-| 7 | **muse-agent** | **6.82** | Best security posture (fail-closed, code-enforced) + best local story. Weakness: solo author, macOS-first. |
-| 8 | **khoj** | **6.78** | Best document memory + scheduled research automations. Weakness: AGPL copyleft; no browser/computer use. |
-| 9 | **nanobot** | **6.56** | Best lightweight footprint + markdown memory. Weakness: no replay after restart, thin safety model. |
-| 10 | **ironclaw** | **6.05** | Security benchmark (WASM sandbox, AES secrets, no telemetry). Weakness: no browser, BYOK-only, PG friction. |
-| 11 | **picoclaw** | **5.96** | Edge extreme (10–20MB RAM, rule-based routing). Weakness: self-declared "not production-ready", weak memory. |
-| 12 | **openmuse** | **5.87** | Honesty exemplar (VERIFICATION.md) + durable tasks. Weakness: solo-author alpha, fictional-data default. |
+| 2 | **actlet** | **7.76** | Best approval-gated safety + consumer web UI + proactive suggestions. Weakness: 1 day old, 0 stars, untested sandbox. |
+| 3 | **zeroclaw** | **7.62** | Best trust story: tiered autonomy + tool receipts + OS sandboxes. Weakness: no multi-agent, 1k-issue backlog. |
+| 4 | **letta** | **7.60** | Best memory architecture anywhere (blocks + MemFS + dreaming). Weakness: cloud-default lock-in, repo split. |
+| 5 | **agent-zero** | **7.31** | Best computer-use (full XFCE desktop + Time Travel). Weakness: safety = user discipline; no goal/proactive loop. |
+| 6 | **openclaw** | **7.27** | Biggest ecosystem (ClawHub, 20+ channels). Weakness: host-exec default, scale complexity. |
+| 7 | **nanoMuse** | **7.09** | Best phone-first UX + human-takeover logins. Weakness: 3 weeks old, thin reliability record. |
+| 8 | **muse-agent** | **6.82** | Best security posture (fail-closed, code-enforced) + best local story. Weakness: solo author, macOS-first. |
+| 9 | **khoj** | **6.78** | Best document memory + scheduled research automations. Weakness: AGPL copyleft; no browser/computer use. |
+| 10 | **nanobot** | **6.56** | Best lightweight footprint + markdown memory. Weakness: no replay after restart, thin safety model. |
+| 11 | **ironclaw** | **6.05** | Security benchmark (WASM sandbox, AES secrets, no telemetry). Weakness: no browser, BYOK-only, PG friction. |
+| 12 | **picoclaw** | **5.96** | Edge extreme (10–20MB RAM, rule-based routing). Weakness: self-declared "not production-ready", weak memory. |
+| 13 | **openmuse** | **5.87** | Honesty exemplar (VERIFICATION.md) + durable tasks. Weakness: solo-author alpha, fictional-data default. |
 
 **What the ranking says:** nobody clears 8/10. The leader (hermes-agent) wins on breadth, not on trust or focus. The top-3 cluster (hermes-agent, zeroclaw, letta) defines the bar: learning memory + audited autonomy + tiered storage. Every product below 7 has a structural hole (no browser, no memory, no proactivity, or no security story).
 
