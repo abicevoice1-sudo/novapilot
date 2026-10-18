@@ -1,5 +1,5 @@
 /**
- * NovaPilot API client. Implements EXACTLY the Milestone 2 contract —
+ * Actlet API client. Implements EXACTLY the Milestone 2 contract —
  * no invented endpoints.
  *
  * Same-origin in production; in dev Vite proxies /api and /health
@@ -27,12 +27,12 @@ export interface Conversation {
 
 export interface Health {
   ok: boolean
-  service: 'novapilot-api'
+  service: 'actlet-api'
   milestone: number
   model_default: string
 }
 
-const TOKEN_KEY = 'novapilot_token'
+const TOKEN_KEY = 'actlet_token'
 
 export function getToken(): string {
   return localStorage.getItem(TOKEN_KEY) ?? ''
@@ -53,7 +53,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   try {
     res = await fetch(path, { ...init, headers: authHeaders(init.headers as Record<string, string>) })
   } catch {
-    throw new Error('Cannot reach the NovaPilot backend (is it running?)')
+    throw new Error('Cannot reach the Actlet backend (is it running?)')
   }
   if (!res.ok) {
     // Surface the backend's own message when it explains itself (e.g. 400 on a bare secret).

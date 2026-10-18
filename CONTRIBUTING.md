@@ -1,4 +1,4 @@
-# Contributing to NovaPilot
+# Contributing to Actlet
 
 Milestone 1 is research + spec; code contributions land from Milestone 2 on.
 

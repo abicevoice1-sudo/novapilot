@@ -24,8 +24,8 @@ def test_models_lists_catalog():
 
 
 def test_token_auth_enforced_when_set():
-    old = settings.novapilot_token
-    settings.novapilot_token = "s3cret"
+    old = settings.actlet_token
+    settings.actlet_token = "s3cret"
     try:
         with TestClient(app) as client:
             assert client.get("/api/models").status_code == 401
@@ -33,4 +33,4 @@ def test_token_auth_enforced_when_set():
             assert r.status_code == 200
             assert client.get("/health").status_code == 200  # health stays public
     finally:
-        settings.novapilot_token = old
+        settings.actlet_token = old

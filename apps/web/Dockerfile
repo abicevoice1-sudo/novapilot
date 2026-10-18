@@ -1,4 +1,4 @@
-# NovaPilot web UI — multi-stage: node:24 builds the SPA, nginx serves it.
+# Actlet web UI — multi-stage: node:24 builds the SPA, nginx serves it.
 FROM node:24-alpine AS build
 WORKDIR /app
 COPY package*.json ./

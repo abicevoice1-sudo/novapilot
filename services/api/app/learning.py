@@ -6,11 +6,11 @@ import json
 import logging
 from pathlib import Path
 
-from novapilot_learning import DreamConsolidator, SkillStore
+from actlet_learning import DreamConsolidator, SkillStore
 
 from .config import settings
 
-log = logging.getLogger("novapilot.learning")
+log = logging.getLogger("actlet.learning")
 
 _skill_store: SkillStore | None = None
 

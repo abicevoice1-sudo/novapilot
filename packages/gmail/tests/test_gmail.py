@@ -5,9 +5,9 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
-from novapilot_agent.tools import ToolRegistry
+from actlet_agent.tools import ToolRegistry
 
-from novapilot_gmail import GmailChannel, GmailClient, register_gmail_tools
+from actlet_gmail import GmailChannel, GmailClient, register_gmail_tools
 
 RAW = (
     b"From: Alice <alice@example.com>\r\n"
@@ -86,7 +86,7 @@ async def test_tools_registered():
 
 
 async def test_channel_hands_unseen_to_agent():
-    from novapilot_channels.base import InboundMessage
+    from actlet_channels.base import InboundMessage
 
     with patch("imaplib.IMAP4_SSL") as imap_cls:
         conn = _fake_imap(uids=(b"7",), unseen=(b"7",))
@@ -106,7 +106,7 @@ async def test_channel_hands_unseen_to_agent():
 
 
 async def test_channel_ignores_non_allowed_senders():
-    from novapilot_channels.base import InboundMessage
+    from actlet_channels.base import InboundMessage
 
     with patch("imaplib.IMAP4_SSL") as imap_cls:
         conn = _fake_imap(uids=(b"7",), unseen=(b"7",))

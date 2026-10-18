@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from novapilot_agent import TaskRunner
-from novapilot_agent.checkpoints import CheckpointManager
-from novapilot_agent.tools import builtin_registry
-from novapilot_browser import BrowserSession
-from novapilot_browser.tools import register_browser_tools
-from novapilot_gateway import ModelGateway
-from novapilot_memory.tools import register_memory_tools
+from actlet_agent import TaskRunner
+from actlet_agent.checkpoints import CheckpointManager
+from actlet_agent.tools import builtin_registry
+from actlet_browser import BrowserSession
+from actlet_browser.tools import register_browser_tools
+from actlet_gateway import ModelGateway
+from actlet_memory.tools import register_memory_tools
 
 from .config import settings
 from .learning import skills_provider
@@ -57,14 +57,14 @@ def build_runner(memory_service) -> TaskRunner:
     register_memory_tools(registry, memory_service, lambda: settings.memory_namespace)
     register_browser_tools(registry, get_browser_session)
     if settings.gmail_address and settings.gmail_app_password:
-        from novapilot_gmail import GmailClient, register_gmail_tools
+        from actlet_gmail import GmailClient, register_gmail_tools
 
         def _gmail_factory() -> GmailClient:
             return GmailClient(settings.gmail_address, settings.gmail_app_password)
 
         register_gmail_tools(registry, _gmail_factory)
     if settings.caldav_url and settings.caldav_username and settings.caldav_password:
-        from novapilot_calendar import CalendarClient, register_calendar_tools
+        from actlet_calendar import CalendarClient, register_calendar_tools
 
         def _cal_factory() -> CalendarClient:
             return CalendarClient(
@@ -90,7 +90,7 @@ def build_runner(memory_service) -> TaskRunner:
         skills_provider=skills_provider,
         checkpoint_manager=get_checkpoint_manager(),
     )
-    from novapilot_agent import register_delegate_tool
+    from actlet_agent import register_delegate_tool
 
     register_delegate_tool(registry, runner.run_delegate)
     return runner

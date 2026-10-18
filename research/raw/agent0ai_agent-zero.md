@@ -7,7 +7,7 @@
 ## Verification
 
 - Verification date: 2026-10-18
-- Stats: unknown — saved GitHub API JSON (`~/workspace/nova-agent/research/raw/agent0ai_agent-zero.json`) contained ONLY a rate-limit error ("API rate limit exceeded"; authenticated requests advised). No star/fork/issue counts are stated in the README either.
+- Stats: unknown — saved GitHub API JSON (`~/workspace/actlet-agent/research/raw/agent0ai_agent-zero.json`) contained ONLY a rate-limit error ("API rate limit exceeded"; authenticated requests advised). No star/fork/issue counts are stated in the README either.
 - License: unknown (SPDX not stated anywhere in the README).
 - Primary language: Python (per a third-party framework listing; README implies Python via `prompts/`/`tools/` dirs but does not state it explicitly).
 - Archived: no. README: "Agent Zero remains the open framework and Linux-powered workbench." Docs site lists v2.14 (startup/prompt-cache release) and v2.13 (file browser, project folders, slash commands) ~25 days ago — actively released.

@@ -6,8 +6,8 @@ the fallback behavior — never a real container.
 
 from unittest.mock import patch
 
-from novapilot_agent.sandbox import DockerSandbox, SandboxResult
-from novapilot_agent.tools import builtin_registry, sandboxed_shell_available
+from actlet_agent.sandbox import DockerSandbox, SandboxResult
+from actlet_agent.tools import builtin_registry, sandboxed_shell_available
 
 
 def test_available_false_without_docker():
@@ -16,7 +16,7 @@ def test_available_false_without_docker():
 
 
 def test_sandboxed_tool_not_registered_by_default(monkeypatch):
-    monkeypatch.delenv("NOVAPILOT_SANDBOX", raising=False)
+    monkeypatch.delenv("ACTLET_SANDBOX", raising=False)
     reg = builtin_registry()
     assert reg.get("shell_sandboxed") is None
     assert sandboxed_shell_available() is False
@@ -59,10 +59,10 @@ def test_run_raises_when_unavailable():
 
 
 async def test_sandboxed_tool_fails_cleanly_without_docker(monkeypatch):
-    monkeypatch.delenv("NOVAPILOT_SANDBOX", raising=False)
+    monkeypatch.delenv("ACTLET_SANDBOX", raising=False)
     # Register the tool manually to test its error path.
 
-    from novapilot_agent.tools import Tool, ToolRegistry, _SandboxShellArgs, _shell_sandboxed
+    from actlet_agent.tools import Tool, ToolRegistry, _SandboxShellArgs, _shell_sandboxed
 
     reg = ToolRegistry()
     reg.register(Tool("shell_sandboxed", "x", _SandboxShellArgs, _shell_sandboxed,

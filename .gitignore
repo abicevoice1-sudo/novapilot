@@ -10,7 +10,7 @@ uv.lock
 # Data (local-first; user data stays on their machine)
 *.db
 *.db-journal
-novapilot-data/
+actlet-data/
 
 # Frontend
 apps/web/node_modules/

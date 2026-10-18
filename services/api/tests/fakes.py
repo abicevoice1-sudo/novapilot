@@ -1,6 +1,6 @@
 """Scripted gateway stub for API tests (mirrors agent-core's test fake)."""
 
-from novapilot_gateway import BudgetExceeded
+from actlet_gateway import BudgetExceeded
 
 
 class ScriptedGateway:

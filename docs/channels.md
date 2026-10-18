@@ -2,7 +2,7 @@
 
 ## Messaging channels
 
-Talk to Nova from Telegram: set `TELEGRAM_BOT_TOKEN` (from @BotFather) and
+Talk to Actlet from Telegram: set `TELEGRAM_BOT_TOKEN` (from @BotFather) and
 restart. Optionally set `TELEGRAM_ALLOWED_USERS="12345,67890"` — without it,
 anyone who finds the bot can talk to your agent.
 
@@ -16,7 +16,7 @@ How it works:
 
 ## MCP servers as tools
 
-Point Nova at any MCP server via `MCP_SERVERS` JSON:
+Point Actlet at any MCP server via `MCP_SERVERS` JSON:
 
 ```json
 {"fs": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"]}}

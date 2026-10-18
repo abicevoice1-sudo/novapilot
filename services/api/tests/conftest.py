@@ -2,10 +2,10 @@
 
 import os
 
-os.environ["DATABASE_URL"] = "sqlite+aiosqlite:////tmp/novapilot-test.db"
-os.environ["NOVAPILOT_TOKEN"] = ""
+os.environ["DATABASE_URL"] = "sqlite+aiosqlite:////tmp/actlet-test.db"
+os.environ["ACTLET_TOKEN"] = ""
 os.environ["MODEL_DEFAULT"] = "test/echo"
 
-_db = "/tmp/novapilot-test.db"
+_db = "/tmp/actlet-test.db"
 if os.path.exists(_db):
     os.remove(_db)

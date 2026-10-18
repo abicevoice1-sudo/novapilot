@@ -1,7 +1,7 @@
 [project]
-name = "novapilot-browser"
+name = "actlet-browser"
 version = "0.5.0"
-description = "NovaPilot browser workspace: Playwright session, scoped navigation, approval-gated actions"
+description = "Actlet browser workspace: Playwright session, scoped navigation, approval-gated actions"
 requires-python = ">=3.12"
 dependencies = [
   "playwright>=1.40",
@@ -25,4 +25,4 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["novapilot_browser"]
+packages = ["actlet_browser"]

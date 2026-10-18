@@ -7,8 +7,8 @@ import pytest
 from langgraph.checkpoint.memory import InMemorySaver
 from pydantic import BaseModel
 
-from novapilot_agent.runner import TaskRunner
-from novapilot_agent.tools import Tool, ToolRegistry, ToolResult
+from actlet_agent.runner import TaskRunner
+from actlet_agent.tools import Tool, ToolRegistry, ToolResult
 
 from .fakes import MemoryTaskStore, ScriptedGateway
 

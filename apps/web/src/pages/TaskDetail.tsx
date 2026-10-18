@@ -87,7 +87,7 @@ function ShotImage({
   if (failed) {
     return (
       <p className="text-[11px] italic text-zinc-600">
-        screenshot unavailable{typeof localStorage !== 'undefined' && localStorage.getItem('novapilot_token') ? ' (auth)' : ''}
+        screenshot unavailable{typeof localStorage !== 'undefined' && localStorage.getItem('actlet_token') ? ' (auth)' : ''}
       </p>
     )
   }
@@ -474,7 +474,7 @@ export default function TaskDetail({ id, onBack }: TaskDetailProps): React.React
           <div className="slim-scroll min-h-0 flex-1 overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-900/40 p-3">
             {detail.steps.length === 0 ? (
               <p className="py-6 text-center text-xs text-zinc-500">
-                No steps yet — the plan appears here once Nova creates it.
+                No steps yet — the plan appears here once Actlet creates it.
               </p>
             ) : (
               <ol className="space-y-2">

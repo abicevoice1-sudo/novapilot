@@ -103,7 +103,7 @@ async def delete_memory(mid: str):
     "/api/conversations/{conv_id}/extract-memories", dependencies=[Depends(require_auth)]
 )
 async def extract_memories(conv_id: str):
-    """Consented write path: the user asks Nova to remember this conversation."""
+    """Consented write path: the user asks Actlet to remember this conversation."""
     from ..db import Message, SessionLocal
     from ..gateway_dep import get_gateway
 
@@ -160,4 +160,4 @@ async def extract_memories(conv_id: str):
 
 def build_memory_context(hits: list[dict]) -> str:
     lines = "\n".join(f"- {h['content']}" for h in hits)
-    return f"Relevant memories about the user (from Nova's long-term memory):\n{lines}"
+    return f"Relevant memories about the user (from Actlet's long-term memory):\n{lines}"

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from novapilot_memory import MemoryService, create_service
+from actlet_memory import MemoryService, create_service
 
 from .config import settings
 

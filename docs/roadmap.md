@@ -1,4 +1,4 @@
-# NovaPilot — Roadmap
+# Actlet — Roadmap
 
 Milestones ship as small, testable vertical slices. A milestone is **not complete** until its acceptance tests pass; status is tracked here honestly.
 
@@ -18,7 +18,7 @@ Milestones ship as small, testable vertical slices. A milestone is **not complet
 
 - [x] FastAPI service: config, SQLite/Postgres, token auth, health, structured JSON logging
 - [x] React UI shell: streaming chat, conversation sidebar, model dropdown, nav, settings page
-- [x] Model gateway live: LiteLLM-backed `novapilot_gateway` package — Ollama default + Groq/Gemini/OpenRouter fallbacks, per-task cost/token/wall-clock budgets, honest "no model reachable" errors
+- [x] Model gateway live: LiteLLM-backed `actlet_gateway` package — Ollama default + Groq/Gemini/OpenRouter fallbacks, per-task cost/token/wall-clock budgets, honest "no model reachable" errors
 - [x] `docker-compose up` brings up api + web (validated: compose YAML parses, Dockerfiles build from repo root; full compose run needs a Docker host — verified in CI)
 - [x] CI: ruff + gateway tests + API tests + web build
 
@@ -35,7 +35,7 @@ Milestones ship as small, testable vertical slices. A milestone is **not complet
 
 ## Milestone 4 — Memory ✅ (2026-10-18)
 
-- [x] `novapilot-memory` package: embedded SQLite + FTS5 store (zero services); mem0 adapter for self-hosted mem0+Qdrant+Ollama via `MEMORY_BACKEND=mem0`
+- [x] `actlet-memory` package: embedded SQLite + FTS5 store (zero services); mem0 adapter for self-hosted mem0+Qdrant+Ollama via `MEMORY_BACKEND=mem0`
 - [x] Provenance (source/timestamp/tags) on every memory; full CRUD API; Memory UI page (list/search/add/edit/delete/export/import)
 - [x] Agent memory tools (`memory_search/add/update/delete`; delete needs approval); planner checks memory first
 - [x] Chat recall: relevant memories injected into the system prompt; "Remember this conversation" extraction (consented write path)
@@ -46,7 +46,7 @@ Milestones ship as small, testable vertical slices. A milestone is **not complet
 
 ## Milestone 5 — Browser workspace ✅ (2026-10-18)
 
-- [x] `novapilot-browser` package: real Chromium via Playwright (headless), lazy start
+- [x] `actlet-browser` package: real Chromium via Playwright (headless), lazy start
 - [x] Scoped navigation (`BROWSER_ALLOWED_DOMAINS`; http(s) only)
 - [x] 9 agent tools (open/snapshot/read/click/fill/select/press/back/screenshot) —
       ALL risk=high + approval-gated; every action screenshotted, receipts in the
@@ -63,7 +63,7 @@ Deferred: file sandbox tightening (Docker), injection evals — folded into M7.
 
 ## Milestone 6 — Scheduling & proactivity ✅ (2026-10-18, Phase A of #1 plan)
 
-- [x] `novapilot-scheduler` package: natural-language parsing ("every morning at 8",
+- [x] `actlet-scheduler` package: natural-language parsing ("every morning at 8",
       "every monday at 9am", "every 30 minutes"), Schedule model, native asyncio
       driver over APScheduler trigger math (replaced AsyncIOScheduler after its
       fire-and-forget shutdown raced TestClient teardown)
@@ -79,7 +79,7 @@ across 5 consecutive runs (38 tests).
 
 ## Phase B — Learning loop ✅ (2026-10-18)
 
-- [x] `novapilot-learning` package: `DreamConsolidator` (task summaries →
+- [x] `actlet-learning` package: `DreamConsolidator` (task summaries →
       durable facts via memory service, bad JSON dropped never stored),
       `SkillStore` (SKILL.md with YAML frontmatter, keyword-relevant lookup)
 - [x] Planner receives relevant skills automatically (`skills_provider`
@@ -96,12 +96,12 @@ planner skill matching confirmed. 9 learning + 4 API tests green.
 
 ## Phase C — Channels + MCP + skill portability ✅ (2026-10-18)
 
-- [x] `novapilot-channels`: Telegram long-polling (getMe verification,
+- [x] `actlet-channels`: Telegram long-polling (getMe verification,
       unauthorized-user filtering, 4k message chunking). 5 tests (mocked API).
 - [x] Channel manager: inbound → fully-supervised task (`source:
       "telegram:<chat_id>"`), "On it" ack, approval nudges, summary replies.
       `GET /api/channels` status.
-- [x] `novapilot-mcp`: dependency-free MCP stdio client (initialize →
+- [x] `actlet-mcp`: dependency-free MCP stdio client (initialize →
       tools/list → tools/call). MCP tools register as `mcp_<server>_<tool>`
       with risk=medium + requires_approval. 3 tests (fake server).
 - [x] Skill export/import: portable SKILL.md, `GET /api/skills/{name}/export`,
@@ -123,7 +123,7 @@ hit the approval gate for `mcp_weather_get_weather`, approved, completed with
       in agent-core, 5 unit + 2 API tests
 - [x] Docker sandbox: `DockerSandbox` (no network, capped resources, read-only
       root) + `shell_sandboxed` tool (high-risk, approval-gated) registered
-      only when `NOVAPILOT_SANDBOX=docker` and Docker is reachable; graceful
+      only when `ACTLET_SANDBOX=docker` and Docker is reachable; graceful
       fallback otherwise. 5 tests (mocked — no Docker in CI)
 - [x] docs updates (security evals README, roadmap)
 
@@ -172,7 +172,7 @@ ruff clean. Honest limits: IMAP/SMTP untested against real Gmail here
       `calendar_list` (low risk) + `calendar_create` (high risk,
       approval-gated) agent tools. Works with Google Calendar (App Password),
       Nextcloud, Fastmail, iCloud. 5 tests, mocked CalDAV.
-- [x] Multi-agent delegation (`novapilot_agent/delegate.py`): `delegate` tool
+- [x] Multi-agent delegation (`actlet_agent/delegate.py`): `delegate` tool
       with 4 specialist roles (researcher, coder, browser_operator,
       communicator), each with a restricted toolset. Sub-agents share the
       parent's approval queue, budget, and event stream; cannot delegate

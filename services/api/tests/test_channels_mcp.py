@@ -3,8 +3,8 @@
 import sys
 
 import pytest
+from actlet_agent.tools import ToolRegistry
 from fastapi.testclient import TestClient
-from novapilot_agent.tools import ToolRegistry
 
 from app.config import settings
 from app.main import app
@@ -44,10 +44,10 @@ class _FakeChannel:
 async def test_inbound_message_creates_task_and_replies():
     import asyncio as _asyncio
 
+    from actlet_agent import TaskRunner
+    from actlet_agent.tools import ToolRegistry
+    from actlet_channels import InboundMessage
     from langgraph.checkpoint.memory import InMemorySaver
-    from novapilot_agent import TaskRunner
-    from novapilot_agent.tools import ToolRegistry
-    from novapilot_channels import InboundMessage
 
     from app import agent as agent_mod
     from app import channels as channels_mod

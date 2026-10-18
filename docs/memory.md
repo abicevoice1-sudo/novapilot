@@ -1,6 +1,6 @@
 # Memory — policies and design
 
-Nova's memory is **yours**: every memory is readable in the Memory page, editable,
+Actlet's memory is **yours**: every memory is readable in the Memory page, editable,
 deletable, and exportable. Deleting a memory removes it everywhere — search,
 chat recall, the agent's tools, and exports. There is no hidden memory.
 
@@ -37,8 +37,8 @@ the redactor before storage:
 - Default: embedded SQLite + FTS5 (`MEMORY_PATH`, `./memories.db`), keyword search
   with BM25 ranking. Zero services, works on a laptop.
 - Optional: `MEMORY_BACKEND=mem0` uses the real mem0 package against self-hosted
-  Qdrant + Ollama (needs `pip install 'novapilot-memory[mem0]'`; see
-  `novapilot_memory/backends/mem0_backend.py`). The service interface is identical,
+  Qdrant + Ollama (needs `pip install 'actlet-memory[mem0]'`; see
+  `actlet_memory/backends/mem0_backend.py`). The service interface is identical,
   so switching backends never changes the API or UI.
 - Namespaces: memories live under a namespace (`MEMORY_NAMESPACE`, default
   `"default"`); namespaces are fully isolated for future multi-user support.

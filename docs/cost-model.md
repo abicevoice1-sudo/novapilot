@@ -1,10 +1,10 @@
-# NovaPilot — Cost model
+# Actlet — Cost model
 
 **Principle:** the default experience works with $0 of API spend. Paid keys are an upgrade, never a requirement. Free tiers change often — every number below carries its check date; re-verify against the vendor's own rate-limit page before depending on it.
 
 ## What works with no key at all
 
-- **Ollama (local inference)** — the zero-cost floor. `ollama pull gpt-oss:20b && ollama serve` exposes an OpenAI-compatible endpoint on localhost; NovaPilot points at it with one env var. No rate limit, no key, prompts never leave the machine. 20B-class models run acceptably on a 16 GB machine; 120B-class wants an 80 GB GPU or a large unified-memory Mac (checked 2026-10-18).
+- **Ollama (local inference)** — the zero-cost floor. `ollama pull gpt-oss:20b && ollama serve` exposes an OpenAI-compatible endpoint on localhost; Actlet points at it with one env var. No rate limit, no key, prompts never leave the machine. 20B-class models run acceptably on a 16 GB machine; 120B-class wants an 80 GB GPU or a large unified-memory Mac (checked 2026-10-18).
 - **Web research** — RSS feeds, sitemaps, and direct public web access (with safeguards) cost nothing. Wikipedia/Wikidata-style public APIs are free within their terms.
 - **Everything local** — memory, scheduler, file tools, browser automation against localhost, audit logs.
 

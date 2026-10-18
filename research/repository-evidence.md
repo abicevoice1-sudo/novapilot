@@ -29,10 +29,10 @@
 
 ## Naming verification (2026-10-18)
 
-- `nova-agent`: **REJECTED** — taken on PyPI (200) and npm (200); 1,490 GitHub repos match `nova-agent in:name`.
-- Alternatives checked free on **both** PyPI and npm (404): `novaagent`, `nova-ai-agent`, `novapilot`, `vesta-agent`, `halcyon-agent`.
-- `novapilot` on GitHub: 18 name matches, all 0 stars — effectively free.
-- **Decision: NovaPilot** — product name keeps the NOVA working identity; package/repo `novapilot`.
+- `actlet-agent`: **REJECTED** — taken on PyPI (200) and npm (200); 1,490 GitHub repos match `actlet-agent in:name`.
+- Alternatives checked free on **both** PyPI and npm (404): `actletagent`, `actlet-ai-agent`, `actlet`, `vesta-agent`, `halcyon-agent`.
+- `actlet` on GitHub: 18 name matches, all 0 stars — effectively free.
+- **Decision: Actlet** — product name keeps the NOVA working identity; package/repo `actlet`.
 
 ## Dependency verification (2026-10-18)
 

@@ -12,14 +12,14 @@ import json
 import logging
 from datetime import UTC, datetime
 
-from novapilot_scheduler import Schedule, SchedulerService
+from actlet_scheduler import Schedule, SchedulerService
 from sqlalchemy import select
 
 from .config import settings  # noqa: F401  (keeps module import side-effect free)
 from .db import Schedule as ScheduleRow
 from .db import SessionLocal
 
-log = logging.getLogger("novapilot.scheduler")
+log = logging.getLogger("actlet.scheduler")
 
 _service: SchedulerService | None = None
 

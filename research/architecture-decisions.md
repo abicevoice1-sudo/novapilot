@@ -48,11 +48,11 @@
 **Context:** All adopted dependencies are MIT/Apache-2.0 compatible. Apache-2.0 adds an explicit patent grant over MIT, which matters for an agent project that may attract corporate contributors. Avoided: AGPL-3.0 (khoj — copyleft would infect the project), GPL-3.0 (nanoMuse).
 **Consequences:** Permissive commercial use; contributors grant patent rights. No copyleft contamination.
 
-## ADR-008 — Project name: NovaPilot (2026-10-18)
+## ADR-008 — Project name: Actlet (2026-10-18)
 
-**Decision:** Product name **NovaPilot**; repo/package `novapilot`; default agent name "Nova".
-**Context:** Working name NOVA collides: `nova-agent` is taken on PyPI and npm and 1,490 GitHub repos match. `novapilot` is free on PyPI, npm, and effectively free on GitHub (18 matches, all 0★).
-**Consequences:** Keep the NOVA identity (agent answers to Nova) while owning a distinctive, searchable name.
+**Decision:** Product name **Actlet**; repo/package `actlet`; default agent name "Actlet".
+**Context:** Working name NOVA collides: `actlet-agent` is taken on PyPI and npm and 1,490 GitHub repos match. `actlet` is free on PyPI, npm, and effectively free on GitHub (18 matches, all 0★).
+**Consequences (updated 2026-10-18):** Renamed to **actlet** — 0 GitHub repos, free on PyPI/npm. Agent answers to Actlet.
 
 ## ADR-009 — Docker-sandboxed tool execution with allowlists (2026-10-18)
 

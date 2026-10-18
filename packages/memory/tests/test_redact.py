@@ -1,6 +1,6 @@
 """Redaction: secrets never enter memory."""
 
-from novapilot_memory.redact import looks_like_secret_only, redact
+from actlet_memory.redact import looks_like_secret_only, redact
 
 
 def test_openai_key_redacted():

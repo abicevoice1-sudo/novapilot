@@ -12,12 +12,12 @@ import json
 import logging
 from typing import Any
 
-from novapilot_mcp import MCPClient, MCPError
+from actlet_mcp import MCPClient, MCPError
 from pydantic import BaseModel, ConfigDict, create_model
 
 from .config import settings
 
-log = logging.getLogger("novapilot.mcp")
+log = logging.getLogger("actlet.mcp")
 
 _clients: list[MCPClient] = []
 
@@ -48,7 +48,7 @@ def _schema_model(tool) -> type[BaseModel]:
 
 async def register_mcp_servers(registry) -> int:
     """Spawn configured MCP servers and register their tools. Returns tool count."""
-    from novapilot_agent.tools import Tool, ToolResult
+    from actlet_agent.tools import Tool, ToolResult
 
     count = 0
     for server_name, cfg in _parse_config().items():

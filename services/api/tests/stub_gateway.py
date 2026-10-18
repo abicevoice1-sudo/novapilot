@@ -2,7 +2,7 @@
 
 from types import SimpleNamespace
 
-from novapilot_gateway import ModelGateway
+from actlet_gateway import ModelGateway
 
 
 class StubChunk:
@@ -11,7 +11,7 @@ class StubChunk:
 
 
 class StubBackend:
-    def __init__(self, text="Hello from Nova.", fail=False):
+    def __init__(self, text="Hello from Actlet.", fail=False):
         self.text = text
         self.fail = fail
         self.calls = []

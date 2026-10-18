@@ -1,6 +1,6 @@
-# NovaPilot — Architecture
+# Actlet — Architecture
 
-**NovaPilot** is a personal AI agent: it remembers, researches, plans, executes, learns from feedback, and keeps working on approved goals while you're away. One user, local-first, provider-neutral.
+**Actlet** is a personal AI agent: it remembers, researches, plans, executes, learns from feedback, and keeps working on approved goals while you're away. One user, local-first, provider-neutral.
 
 ## The stack (and why — see `research/architecture-decisions.md` for ADRs)
 
@@ -15,7 +15,7 @@
 | Browser | **Playwright** in dedicated container | Mature substrate; browser-use/stagehand patterns adapted as tool modules |
 | Sandbox | **Docker** + network allowlists | IronClaw-inspired pipeline; no un-sandboxed host exec by default |
 | Frontend | **React 18 + Vite + Tailwind** | The empty market slot is a polished web app — this is where we win UX |
-| Packaging | **Docker Compose** + `pip install novapilot` | One-command local setup |
+| Packaging | **Docker Compose** + `pip install actlet` | One-command local setup |
 
 ```
                     ┌─────────────────────────────────────────┐
@@ -55,18 +55,18 @@
 5. **Tool output is untrusted data.** Retrieved pages, docs, and tool results are never treated as instructions (prompt-injection boundary, see `docs/security.md`).
 6. **Honest boundaries.** Like openmuse's VERIFICATION.md: the UI labels what's verified working, what's experimental, and what's a placeholder. No mocked integrations presented as real.
 
-## Product differentiators (why NovaPilot, not the 12 products above)
+## Product differentiators (why Actlet, not the 12 products above)
 
 1. **Audited autonomy with consumer UX** — zeroclaw-grade tool receipts and tiered autonomy behind a web approval surface nobody has built.
 2. **Memory you can read and own** — letta-grade architecture (blocks + dreaming) with nanobot-grade human-readable mirrors, local-first, exportable, deletable.
 3. **Budgets as a feature** — per-task cost/latency caps with provider fallback routing; the agent tells you what it spent and why.
-4. **The web app slot is empty** — every serious contender is CLI/TUI-first. NovaPilot leads with the polished web UI: streaming tool activity, task feed, browser workspace with human takeover.
+4. **The web app slot is empty** — every serious contender is CLI/TUI-first. Actlet leads with the polished web UI: streaming tool activity, task feed, browser workspace with human takeover.
 5. **Honesty as a feature** — verified-vs-planned labeling everywhere; reproducible evals published from day one (nobody else does this).
 
 ## Repository tree
 
 ```
-novapilot/
+actlet/
 ├── README.md                  # product readme, truthful demo
 ├── LICENSE                    # Apache-2.0
 ├── CONTRIBUTING.md

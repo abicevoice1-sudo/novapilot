@@ -2,8 +2,8 @@
 
 import pytest
 
-from novapilot_memory.service import MemoryService
-from novapilot_memory.store import MemoryStore
+from actlet_memory.service import MemoryService
+from actlet_memory.store import MemoryStore
 
 
 @pytest.fixture()

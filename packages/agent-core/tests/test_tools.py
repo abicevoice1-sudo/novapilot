@@ -4,7 +4,7 @@
 import pytest
 from pydantic import BaseModel
 
-from novapilot_agent.tools import Tool, ToolRegistry, ToolResult, builtin_registry
+from actlet_agent.tools import Tool, ToolRegistry, ToolResult, builtin_registry
 
 
 class _Args(BaseModel):
@@ -43,7 +43,7 @@ async def test_shell_allowlist_blocks_dangerous_commands():
 
 
 async def test_shell_allowlist_permits_safe_commands(tmp_path, monkeypatch):
-    monkeypatch.setenv("NOVAPILOT_WORKSPACE", str(tmp_path))
+    monkeypatch.setenv("ACTLET_WORKSPACE", str(tmp_path))
     reg = builtin_registry()
     result, receipt = await reg.call("shell", {"command": "echo hello"})
     assert result.ok is True
@@ -53,7 +53,7 @@ async def test_shell_allowlist_permits_safe_commands(tmp_path, monkeypatch):
 
 
 async def test_write_file_confined_to_workspace(tmp_path, monkeypatch):
-    monkeypatch.setenv("NOVAPILOT_WORKSPACE", str(tmp_path))
+    monkeypatch.setenv("ACTLET_WORKSPACE", str(tmp_path))
     reg = builtin_registry()
     result, _ = await reg.call("write_file", {"path": "../../escape.txt", "content": "x"})
     assert result.ok is False
@@ -61,7 +61,7 @@ async def test_write_file_confined_to_workspace(tmp_path, monkeypatch):
 
 
 async def test_write_file_roundtrip(tmp_path, monkeypatch):
-    monkeypatch.setenv("NOVAPILOT_WORKSPACE", str(tmp_path))
+    monkeypatch.setenv("ACTLET_WORKSPACE", str(tmp_path))
     reg = builtin_registry()
     result, _ = await reg.call("write_file", {"path": "sub/note.txt", "content": "hello"})
     assert result.ok is True

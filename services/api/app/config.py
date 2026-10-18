@@ -6,8 +6,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    app_name: str = "NovaPilot"
-    database_url: str = "sqlite+aiosqlite:///./novapilot.db"
+    app_name: str = "Actlet"
+    database_url: str = "sqlite+aiosqlite:///./actlet.db"
 
     # Model gateway
     model_default: str = "ollama/gpt-oss:20b"
@@ -31,9 +31,9 @@ class Settings(BaseSettings):
     # Comma-separated domains the agent browser may visit. Empty = unrestricted.
     browser_allowed_domains: str = ""
 
-    # Security: if NOVAPILOT_TOKEN is set, /api/* requires Bearer auth.
+    # Security: if ACTLET_TOKEN is set, /api/* requires Bearer auth.
     # Unset = open (local dev default), with a logged warning.
-    novapilot_token: str = ""
+    actlet_token: str = ""
 
     # Channels (Phase C): Telegram bot. Unset = channel disabled.
     telegram_bot_token: str = ""

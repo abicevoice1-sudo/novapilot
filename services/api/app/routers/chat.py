@@ -3,9 +3,9 @@
 import json
 import logging
 
+from actlet_gateway import BudgetExceeded, GatewayError
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
-from novapilot_gateway import BudgetExceeded, GatewayError
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,7 +13,7 @@ from ..auth import require_auth
 from ..db import Conversation, Message, get_session
 from ..gateway_dep import get_gateway
 
-log = logging.getLogger("novapilot.chat")
+log = logging.getLogger("actlet.chat")
 router = APIRouter()
 
 
@@ -57,7 +57,7 @@ async def chat(
     payload = [{"role": m.role, "content": m.content} for m in req.messages]
     conv_id = conv.id
 
-    # Recall: inject relevant long-term memories so Nova remembers last week.
+    # Recall: inject relevant long-term memories so Actlet remembers last week.
     # Best-effort — chat works fine if memory is unavailable.
     try:
         from ..config import settings as _settings

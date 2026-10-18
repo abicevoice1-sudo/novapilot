@@ -86,7 +86,7 @@ export default function Tasks({ onOpenTask }: TasksProps): React.ReactElement {
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-zinc-100">Tasks</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Delegate an outcome. Nova plans, acts, and verifies — asking for approval before
+          Delegate an outcome. Actlet plans, acts, and verifies — asking for approval before
           anything consequential.
         </p>
       </div>
@@ -135,7 +135,7 @@ export default function Tasks({ onOpenTask }: TasksProps): React.ReactElement {
             </div>
             <h2 className="text-lg font-medium text-zinc-200">No tasks yet</h2>
             <p className="mx-auto mt-2 max-w-sm text-sm text-zinc-500">
-              Describe an outcome above and Nova will break it into steps, run them, and check
+              Describe an outcome above and Actlet will break it into steps, run them, and check
               its own work.
             </p>
           </div>

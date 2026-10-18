@@ -1,6 +1,6 @@
 # Browser workspace — safety model
 
-Nova drives a real Chromium (Playwright, headless). The browser is powerful,
+Actlet drives a real Chromium (Playwright, headless). The browser is powerful,
 so it is gated harder than any other tool.
 
 ## Rules (enforced in code, not prompts)
@@ -17,7 +17,7 @@ so it is gated harder than any other tool.
 3. **Audit trail.** Every action emits a tool receipt (tool, args digest,
    duration, outcome) into the task's event stream, plus a screenshot artifact.
    Screenshots are served at `GET /api/shots/{name}` (traversal-proof).
-4. **No credential autofill.** Nova never fills passwords and never reads saved
+4. **No credential autofill.** Actlet never fills passwords and never reads saved
    logins. If a site needs sign-in, the approval card says so and you sign in
    yourself — or deny the step.
 

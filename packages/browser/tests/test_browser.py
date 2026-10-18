@@ -1,10 +1,10 @@
 """Browser session tests: scoped navigation, actions, screenshots. Fake session, no Chromium."""
 
 import pytest
-from novapilot_agent.tools import ToolRegistry
+from actlet_agent.tools import ToolRegistry
 
-from novapilot_browser.session import BrowserError, BrowserSession
-from novapilot_browser.tools import register_browser_tools
+from actlet_browser.session import BrowserError, BrowserSession
+from actlet_browser.tools import register_browser_tools
 
 
 class FakeSession:

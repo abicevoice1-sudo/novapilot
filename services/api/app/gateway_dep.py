@@ -1,6 +1,6 @@
 """Gateway singleton wired from settings (overridable in tests)."""
 
-from novapilot_gateway import ModelGateway
+from actlet_gateway import ModelGateway
 
 from .config import settings
 

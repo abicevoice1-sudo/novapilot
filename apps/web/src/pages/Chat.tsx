@@ -203,7 +203,7 @@ export default function Chat(): React.ReactElement {
           )}
         </div>
         <div className="border-t border-zinc-800 p-3 text-[11px] leading-relaxed text-zinc-600">
-          Nova answers from your backend — nothing here is simulated.
+          Actlet answers from your backend — nothing here is simulated.
         </div>
       </aside>
 
@@ -239,7 +239,7 @@ export default function Chat(): React.ReactElement {
             disabled={!currentId || streaming || remembering}
             title={
               currentId
-                ? 'Ask Nova to extract lasting memories from this conversation'
+                ? 'Ask Actlet to extract lasting memories from this conversation'
                 : 'Open a conversation first'
             }
             className="rounded-lg px-3 py-1.5 text-sm text-zinc-400 transition hover:bg-zinc-900 hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-40"
@@ -279,7 +279,7 @@ export default function Chat(): React.ReactElement {
                 </div>
                 <h2 className="text-lg font-medium text-zinc-200">Start a conversation</h2>
                 <p className="mx-auto mt-2 max-w-sm text-sm text-zinc-500">
-                  Ask Nova anything. It remembers across sessions, researches with sources, and
+                  Ask Actlet anything. It remembers across sessions, researches with sources, and
                   shows its work as it streams.
                 </p>
               </div>
@@ -316,7 +316,7 @@ export default function Chat(): React.ReactElement {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={onKeyDown}
               rows={1}
-              placeholder={models.length === 0 ? 'Waiting for models…' : 'Message Nova…  (Enter to send, Shift+Enter for newline)'}
+              placeholder={models.length === 0 ? 'Waiting for models…' : 'Message Actlet…  (Enter to send, Shift+Enter for newline)'}
               disabled={streaming || models.length === 0}
               className="slim-scroll max-h-40 flex-1 resize-none rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-zinc-500 focus:outline-none disabled:opacity-50"
             />

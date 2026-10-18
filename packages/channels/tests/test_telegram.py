@@ -6,7 +6,7 @@ import pytest
 import respx
 from httpx import Response
 
-from novapilot_channels import InboundMessage, OutboundMessage, TelegramChannel
+from actlet_channels import InboundMessage, OutboundMessage, TelegramChannel
 
 TOKEN = "test-token-123"
 BASE = f"https://api.telegram.org/bot{TOKEN}"
@@ -22,7 +22,7 @@ def no_proxy_env(monkeypatch):
 
 def _me():
     return respx.get(f"{BASE}/getMe").mock(
-        return_value=Response(200, json={"ok": True, "result": {"username": "novapilot_bot"}})
+        return_value=Response(200, json={"ok": True, "result": {"username": "actlet_bot"}})
     )
 
 
@@ -61,7 +61,7 @@ def _update(text, user_id=42, name="Syed"):
 @respx.mock
 async def test_inbound_message_dispatched():
     _me()
-    _updates_route([_update("hello nova")])
+    _updates_route([_update("hello actlet")])
     ch = TelegramChannel(TOKEN)
     received: list[InboundMessage] = []
     await ch.start(received.append)
@@ -71,7 +71,7 @@ async def test_inbound_message_dispatched():
         await asyncio.sleep(0.05)
     await ch.stop()
     assert len(received) == 1
-    assert received[0].text == "hello nova"
+    assert received[0].text == "hello actlet"
     assert received[0].sender_name == "Syed"
     assert received[0].chat_id == "555"
 

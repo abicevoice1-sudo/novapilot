@@ -12,10 +12,10 @@ def test_health_ok():
     assert r.status_code == 200
     body = r.json()
     assert body["ok"] is True
-    assert body["service"] == "novapilot-api"
+    assert body["service"] == "actlet-api"
     assert body["milestone"] == 6
 
 
 def test_settings_defaults():
     assert settings.task_max_cost_usd == 0.50
-    assert settings.novapilot_token == ""
+    assert settings.actlet_token == ""

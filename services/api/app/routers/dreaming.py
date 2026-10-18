@@ -2,8 +2,8 @@
 
 import json
 
+from actlet_learning import Skill
 from fastapi import APIRouter, Depends, HTTPException
-from novapilot_learning import Skill
 from pydantic import BaseModel
 
 from ..auth import require_auth

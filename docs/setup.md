@@ -16,7 +16,7 @@ docker-compose up --build
 ```
 
 The `web` container serves the built React app and proxies `/api/*` to the API.
-Data (SQLite) lives in the `novapilot-data` volume.
+Data (SQLite) lives in the `actlet-data` volume.
 
 ## Option B — local dev
 
@@ -33,7 +33,7 @@ cd apps/web && npm install && npm run dev          # → http://localhost:5173 (
 
 ```bash
 curl localhost:8000/health
-# {"ok": true, "service": "novapilot-api", "milestone": 3, "model_default": "ollama/gpt-oss:20b"}
+# {"ok": true, "service": "actlet-api", "milestone": 3, "model_default": "ollama/gpt-oss:20b"}
 
 cd services/api && pytest -q                       # API tests (stubbed gateway/runner, no keys)
 cd ../../packages/model-gateway && pytest -q       # gateway tests (fallback + budgets)
@@ -43,7 +43,7 @@ cd ../../apps/web && npm run build                 # web build
 
 ## Tasks (Milestone 3)
 
-`POST /api/tasks {"goal": "..."}` — Nova plans with LangGraph, calls validated
+`POST /api/tasks {"goal": "..."}` — Actlet plans with LangGraph, calls validated
 tools, and streams progress as SSE on `/api/tasks/{id}/events`. Tools that write
 or change state need your approval (Approve/Reject in the Tasks UI or via
 `POST /api/tasks/{id}/approve`). Cancel/pause/resume via
@@ -54,7 +54,7 @@ tasks `paused` so they can resume.
 
 ## Notes
 
-- `NOVAPILOT_TOKEN` unset = API open (local dev). Set it on any shared network —
+- `ACTLET_TOKEN` unset = API open (local dev). Set it on any shared network —
   the web UI's Settings page stores it and sends it as a Bearer token.
 - `DATABASE_URL` switches to Postgres (`postgresql+asyncpg://…`) for multi-user setups.
 - `docker-compose` needs a Docker host; it is validated in CI on every push.

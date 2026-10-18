@@ -6,8 +6,8 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 from pydantic import BaseModel
 
-from novapilot_agent.graph import build_graph
-from novapilot_agent.tools import Tool, ToolRegistry, ToolResult
+from actlet_agent.graph import build_graph
+from actlet_agent.tools import Tool, ToolRegistry, ToolResult
 
 from .fakes import ScriptedGateway
 

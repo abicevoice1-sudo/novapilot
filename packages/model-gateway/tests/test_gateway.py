@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from novapilot_gateway import BudgetExceeded, GatewayError, ModelGateway
+from actlet_gateway import BudgetExceeded, GatewayError, ModelGateway
 
 
 class FakeChunk:

@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from novapilot_learning import DreamConsolidator, Skill, SkillStore
+from actlet_learning import DreamConsolidator, Skill, SkillStore
 
 
 @pytest.fixture()

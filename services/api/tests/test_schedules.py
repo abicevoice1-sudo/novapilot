@@ -5,10 +5,10 @@ import json as _json
 import time
 
 import pytest
+from actlet_agent import TaskRunner
+from actlet_agent.tools import Tool, ToolRegistry
 from fastapi.testclient import TestClient
 from langgraph.checkpoint.memory import InMemorySaver
-from novapilot_agent import TaskRunner
-from novapilot_agent.tools import Tool, ToolRegistry
 from pydantic import BaseModel
 from sqlalchemy import select
 
@@ -26,7 +26,7 @@ class _EchoArgs(BaseModel):
 
 
 async def _echo(args: _EchoArgs):
-    from novapilot_agent.tools import ToolResult
+    from actlet_agent.tools import ToolResult
 
     return ToolResult(ok=True, output=f"echo:{args.text}")
 
@@ -36,7 +36,7 @@ class _DangerArgs(BaseModel):
 
 
 async def _danger(args: _DangerArgs):
-    from novapilot_agent.tools import ToolResult
+    from actlet_agent.tools import ToolResult
 
     return ToolResult(ok=True, output="danger done")
 

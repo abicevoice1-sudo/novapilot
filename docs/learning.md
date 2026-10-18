@@ -1,6 +1,6 @@
 # Learning loop — dreaming + skills
 
-NovaPilot gets smarter the more you use it, without phoning anything home.
+Actlet gets smarter the more you use it, without phoning anything home.
 
 ## Dreaming (nightly consolidation)
 

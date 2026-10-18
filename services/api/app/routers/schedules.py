@@ -3,8 +3,8 @@
 import json
 from datetime import UTC, datetime
 
+from actlet_scheduler import ScheduleParseError, parse_schedule
 from fastapi import APIRouter, Depends, HTTPException
-from novapilot_scheduler import ScheduleParseError, parse_schedule
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 

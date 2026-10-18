@@ -1,6 +1,6 @@
-# NovaPilot — Security & threat model
+# Actlet — Security & threat model
 
-NovaPilot handles private memories, files, credentials, browser sessions, and external actions. It is designed as a security-sensitive application from day one.
+Actlet handles private memories, files, credentials, browser sessions, and external actions. It is designed as a security-sensitive application from day one.
 
 ## Trust boundaries
 

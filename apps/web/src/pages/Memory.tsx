@@ -239,7 +239,7 @@ export default function MemoryPage(): React.ReactElement {
       const { merged } = await addMemory(content, parseTags(newTags))
       setNewContent('')
       setNewTags('')
-      setAddNote(merged ? 'Merged with a memory Nova already had.' : 'Remembered.')
+      setAddNote(merged ? 'Merged with a memory Actlet already had.' : 'Remembered.')
       load(query.trim())
     } catch (e) {
       setAddError(e instanceof Error ? e.message : 'Could not save memory')
@@ -260,7 +260,7 @@ export default function MemoryPage(): React.ReactElement {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'novapilot-memories.json'
+      a.download = 'actlet-memories.json'
       document.body.appendChild(a)
       a.click()
       a.remove()
@@ -311,7 +311,7 @@ export default function MemoryPage(): React.ReactElement {
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-zinc-100">Memory</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          What Nova remembers about you. Everything here is yours — readable, exportable, and
+          What Actlet remembers about you. Everything here is yours — readable, exportable, and
           deletable. Deleting a memory is permanent and honored everywhere.
         </p>
       </div>
@@ -328,7 +328,7 @@ export default function MemoryPage(): React.ReactElement {
           onClick={() => void doExport()}
           disabled={exporting}
           className="rounded-xl border border-zinc-700 px-4 py-2.5 text-sm text-zinc-300 transition hover:bg-zinc-900 disabled:opacity-40"
-          title="Download all memories as novapilot-memories.json"
+          title="Download all memories as actlet-memories.json"
         >
           {exporting ? '…' : 'Export'}
         </button>
@@ -397,7 +397,7 @@ export default function MemoryPage(): React.ReactElement {
           value={newContent}
           onChange={(e) => setNewContent(e.target.value)}
           rows={2}
-          placeholder="Something Nova should remember…"
+          placeholder="Something Actlet should remember…"
           disabled={adding}
           className="w-full resize-y rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-zinc-500 focus:outline-none disabled:opacity-50"
         />
@@ -442,12 +442,12 @@ export default function MemoryPage(): React.ReactElement {
               🧠
             </div>
             <h2 className="text-lg font-medium text-zinc-200">
-              {query.trim() ? 'No memories match that search' : "Nova doesn't remember anything yet."}
+              {query.trim() ? 'No memories match that search' : "Actlet doesn't remember anything yet."}
             </h2>
             <p className="mx-auto mt-2 max-w-sm text-sm text-zinc-500">
               {query.trim()
                 ? 'Try a different search, or clear it to see everything.'
-                : 'Add one above, or ask Nova to remember this conversation from the chat header.'}
+                : 'Add one above, or ask Actlet to remember this conversation from the chat header.'}
             </p>
           </div>
         ) : (

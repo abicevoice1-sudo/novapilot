@@ -6,9 +6,9 @@ from datetime import UTC, datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
-from novapilot_agent.tools import ToolRegistry
+from actlet_agent.tools import ToolRegistry
 
-from novapilot_calendar import CalendarClient, register_calendar_tools
+from actlet_calendar import CalendarClient, register_calendar_tools
 
 
 def _fake_event(summary="Team standup"):

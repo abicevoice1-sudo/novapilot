@@ -2,7 +2,7 @@
 
 import pytest
 
-from novapilot_agent import CheckpointManager
+from actlet_agent import CheckpointManager
 
 
 @pytest.fixture()

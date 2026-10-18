@@ -29,14 +29,14 @@ def test_chat_streams_and_persists():
             kinds = [e["type"] for e in events]
             assert "delta" in kinds and kinds[-1] == "done"
             streamed = "".join(e.get("text", "") for e in events)
-            assert streamed.strip() == "Hello from Nova."
+            assert streamed.strip() == "Hello from Actlet."
 
             convs = client.get("/api/conversations").json()["conversations"]
             assert len(convs) >= 1
             msgs = client.get(f"/api/conversations/{convs[0]['id']}/messages").json()["messages"]
             roles = [m["role"] for m in msgs]
             assert "user" in roles and "assistant" in roles
-            assert any("Hello from Nova." in m["content"] for m in msgs if m["role"] == "assistant")
+            assert any("Hello from Actlet." in m["content"] for m in msgs if m["role"] == "assistant")
     finally:
         gateway_dep.override_gateway(None)
 

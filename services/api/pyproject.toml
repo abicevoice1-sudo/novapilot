@@ -1,7 +1,7 @@
 [project]
-name = "novapilot-api"
+name = "actlet-api"
 version = "0.3.0"
-description = "NovaPilot API service (Milestone 3: agent core + tasks)"
+description = "Actlet API service (Milestone 3: agent core + tasks)"
 requires-python = ">=3.12"
 dependencies = [
   "fastapi>=0.115",
@@ -13,7 +13,7 @@ dependencies = [
   "litellm>=1.60",
   "langgraph>=1.2",
   "langgraph-checkpoint-sqlite>=2.0",
-  # novapilot-* are installed separately (../packages/*)
+  # actlet-* are installed separately (../packages/*)
 ]
 
 [project.optional-dependencies]

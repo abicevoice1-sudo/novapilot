@@ -1,4 +1,4 @@
-"""NovaPilot API — Milestone 3: agent core.
+"""Actlet API — Milestone 3: agent core.
 
 Chat (streaming SSE) + model catalog + conversation history, backed by the
 LiteLLM model gateway (Ollama default, free-tier fallbacks, enforced budgets).
@@ -56,7 +56,7 @@ async def lifespan(app: FastAPI):
 
     n_mcp = await register_mcp_servers(runner.registry)
     if n_mcp:
-        logging.getLogger("novapilot").info("registered %d MCP tools", n_mcp)
+        logging.getLogger("actlet").info("registered %d MCP tools", n_mcp)
     yield
     from .mcp_setup import close_mcp_servers
 
@@ -68,7 +68,7 @@ async def lifespan(app: FastAPI):
     await close_memory_service()
 
 
-app = FastAPI(title="NovaPilot API", version="0.2.0", lifespan=lifespan)
+app = FastAPI(title="Actlet API", version="0.2.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://localhost:3000"],
@@ -92,7 +92,7 @@ app.include_router(control.router)
 def health() -> dict:
     return {
         "ok": True,
-        "service": "novapilot-api",
+        "service": "actlet-api",
         "milestone": 6,
         "model_default": settings.model_default,
     }

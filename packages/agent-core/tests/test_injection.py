@@ -12,7 +12,7 @@ import json
 
 from langgraph.checkpoint.memory import InMemorySaver
 
-from novapilot_agent.graph import PLANNER_PROMPT, SUMMARY_PROMPT, build_graph
+from actlet_agent.graph import PLANNER_PROMPT, SUMMARY_PROMPT, build_graph
 
 from .fakes import ScriptedGateway
 from .test_graph import _config, _plan_json, _registry

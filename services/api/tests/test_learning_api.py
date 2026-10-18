@@ -5,12 +5,12 @@ import json as _json
 import time
 
 import pytest
+from actlet_agent import TaskRunner
+from actlet_agent.tools import Tool, ToolRegistry, ToolResult
+from actlet_memory.service import MemoryService
+from actlet_memory.store import MemoryStore
 from fastapi.testclient import TestClient
 from langgraph.checkpoint.memory import InMemorySaver
-from novapilot_agent import TaskRunner
-from novapilot_agent.tools import Tool, ToolRegistry, ToolResult
-from novapilot_memory.service import MemoryService
-from novapilot_memory.store import MemoryStore
 from pydantic import BaseModel
 
 from app import agent as agent_mod

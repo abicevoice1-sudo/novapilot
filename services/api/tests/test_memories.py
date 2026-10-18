@@ -4,9 +4,9 @@ import asyncio
 import json as _json
 
 import pytest
+from actlet_memory.service import MemoryService
+from actlet_memory.store import MemoryStore
 from fastapi.testclient import TestClient
-from novapilot_memory.service import MemoryService
-from novapilot_memory.store import MemoryStore
 
 from app import gateway_dep
 from app.main import app

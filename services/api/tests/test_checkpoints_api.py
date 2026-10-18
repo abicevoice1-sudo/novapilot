@@ -4,10 +4,10 @@ import json as _json
 import time
 
 import pytest
+from actlet_agent import CheckpointManager, TaskRunner
+from actlet_agent.tools import Tool, ToolRegistry, ToolResult
 from fastapi.testclient import TestClient
 from langgraph.checkpoint.memory import InMemorySaver
-from novapilot_agent import CheckpointManager, TaskRunner
-from novapilot_agent.tools import Tool, ToolRegistry, ToolResult
 from pydantic import BaseModel
 
 from app import agent as agent_mod

@@ -4,7 +4,7 @@ import sys
 
 import pytest
 
-from novapilot_mcp import MCPClient, MCPError
+from actlet_mcp import MCPClient, MCPError
 
 FAKE_SERVER = """
 import json, sys

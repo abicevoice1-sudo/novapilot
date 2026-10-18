@@ -1,6 +1,6 @@
 """Shared fakes for agent-core tests: scripted gateway + in-memory task store."""
 
-from novapilot_gateway import BudgetExceeded
+from actlet_gateway import BudgetExceeded
 
 
 class ScriptedGateway:

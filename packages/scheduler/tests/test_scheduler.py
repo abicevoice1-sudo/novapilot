@@ -5,7 +5,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from novapilot_scheduler import (
+from actlet_scheduler import (
     Schedule,
     ScheduleParseError,
     SchedulerService,

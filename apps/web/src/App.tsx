@@ -126,11 +126,11 @@ export default function App(): React.ReactElement {
   return (
     <div className="flex h-full flex-col bg-zinc-950">
       <header className="flex items-center gap-4 border-b border-zinc-800 px-4 py-2.5">
-        <button onClick={() => navigate('/')} className="flex items-center gap-2" aria-label="NovaPilot home">
+        <button onClick={() => navigate('/')} className="flex items-center gap-2" aria-label="Actlet home">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 text-base text-zinc-900">
             ✦
           </span>
-          <span className="text-[15px] font-semibold tracking-tight text-zinc-100">NovaPilot</span>
+          <span className="text-[15px] font-semibold tracking-tight text-zinc-100">Actlet</span>
         </button>
         <nav className="flex items-center gap-1">
           {link('/', 'Chat', route.name === 'chat')}

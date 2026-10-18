@@ -10,11 +10,11 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from novapilot_channels import InboundMessage, OutboundMessage, TelegramChannel
+from actlet_channels import InboundMessage, OutboundMessage, TelegramChannel
 
 from .config import settings
 
-log = logging.getLogger("novapilot.channels")
+log = logging.getLogger("actlet.channels")
 
 _manager = None
 
@@ -34,7 +34,7 @@ class ChannelManager:
             log.info("telegram channel configured (allowed_users=%s)",
                      sorted(allowed) or "anyone")
         if settings.gmail_address and settings.gmail_app_password:
-            from novapilot_gmail import GmailChannel, GmailClient
+            from actlet_gmail import GmailChannel, GmailClient
 
             def _factory() -> GmailClient:
                 return GmailClient(settings.gmail_address, settings.gmail_app_password)

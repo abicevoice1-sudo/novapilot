@@ -104,7 +104,7 @@ export default function Settings(): React.ReactElement {
             <p className="mt-3 text-sm leading-relaxed text-zinc-400">
               No channels configured. Set{' '}
               <code className="rounded bg-zinc-800 px-1 font-mono text-xs">TELEGRAM_BOT_TOKEN</code>{' '}
-              on the server to chat with Nova from Telegram (optionally restrict with{' '}
+              on the server to chat with Actlet from Telegram (optionally restrict with{' '}
               <code className="rounded bg-zinc-800 px-1 font-mono text-xs">TELEGRAM_ALLOWED_USERS</code>).
             </p>
           ) : (

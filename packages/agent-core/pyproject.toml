@@ -1,14 +1,14 @@
 [project]
-name = "novapilot-agent-core"
+name = "actlet-agent-core"
 version = "0.3.0"
-description = "NovaPilot agent core: tool registry, LangGraph plan→execute→verify, task runner"
+description = "Actlet agent core: tool registry, LangGraph plan→execute→verify, task runner"
 requires-python = ">=3.12"
 dependencies = [
   "langgraph>=1.2",
   "langgraph-checkpoint-sqlite>=2.0",
   "pydantic>=2.0",
   "httpx>=0.27",
-  # novapilot-gateway installed separately (../packages/model-gateway)
+  # actlet-gateway installed separately (../packages/model-gateway)
 ]
 
 [project.optional-dependencies]
@@ -30,4 +30,4 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["novapilot_agent"]
+packages = ["actlet_agent"]

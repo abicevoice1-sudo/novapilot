@@ -1,7 +1,7 @@
 """Skill library endpoints: list, create, delete. Skills are SKILL.md files."""
 
+from actlet_learning import Skill
 from fastapi import APIRouter, Depends, HTTPException
-from novapilot_learning import Skill
 from pydantic import BaseModel, Field
 
 from ..auth import require_auth

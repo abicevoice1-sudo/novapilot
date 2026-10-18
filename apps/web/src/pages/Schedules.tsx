@@ -91,7 +91,7 @@ function ScheduleForm({
         <textarea
           value={f.goal}
           onChange={(e) => set({ goal: e.target.value })}
-          placeholder="What should Nova do each run? — e.g. Summarize overnight tech news and save the top 5 to memory"
+          placeholder="What should Actlet do each run? — e.g. Summarize overnight tech news and save the top 5 to memory"
           disabled={busy}
           rows={3}
           className={`${inputCls} resize-y`}
@@ -392,7 +392,7 @@ export default function Schedules({ onOpenTask }: SchedulesProps): React.ReactEl
         <div>
           <h1 className="text-xl font-semibold text-zinc-100">Schedules</h1>
           <p className="mt-1 text-sm text-zinc-500">
-            Recurring agent tasks. Nova wakes up on a cadence, plans, and runs — asking for
+            Recurring agent tasks. Actlet wakes up on a cadence, plans, and runs — asking for
             approval unless you've pre-approved its tools.
           </p>
         </div>

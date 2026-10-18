@@ -283,12 +283,12 @@ export default function Skills(): React.ReactElement {
         <div>
           <h1 className="text-xl font-semibold text-zinc-100">Skills</h1>
           <p className="mt-1 text-sm text-zinc-500">
-            Reusable know-how Nova has learned. Skills can be distilled from completed tasks
+            Reusable know-how Actlet has learned. Skills can be distilled from completed tasks
             or written by hand — and dreaming turns recent tasks into lasting memory.
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
-          <button onClick={() => void dream()} disabled={dreamBusy} className={btnGhost} title="Run dreaming consolidation now — Nova reviews recent tasks and stores lasting facts to memory">
+          <button onClick={() => void dream()} disabled={dreamBusy} className={btnGhost} title="Run dreaming consolidation now — Actlet reviews recent tasks and stores lasting facts to memory">
             {dreamBusy ? 'Dreaming…' : '🌙 Run dreaming now'}
           </button>
           <button onClick={() => { setImportError(null); setImporting(true) }} className={btnGhost}>
