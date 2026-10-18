@@ -40,7 +40,7 @@ def _msg_event(text="hello", channel_type="im", user="U123", ts="1.0"):
 @pytest.fixture()
 def channel():
     with respx.mock:
-        yield SlackChannel("xoxb-test", "xapp-test")
+        yield SlackChannel("xoxb-test", "xapp-test", allowed_users={"U123"})
 
 
 async def test_dm_reaches_agent(channel):
@@ -119,7 +119,7 @@ async def test_requires_tokens():
 async def test_send_chunks_long_messages():
     import httpx as _httpx
 
-    ch = SlackChannel("xoxb-test", "xapp-test")
+    ch = SlackChannel("xoxb-test", "xapp-test", allowed_users={"U123"})
     route = respx.post("https://slack.com/api/chat.postMessage").mock(
         return_value=_httpx.Response(200, json={"ok": True})
     )

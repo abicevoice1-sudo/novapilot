@@ -1,19 +1,15 @@
 """Audit-fix security tests: shell hardening, SSRF, workspace isolation."""
 
-import pytest
 
 from actlet_agent.tools import (
-    _is_public_ip,
     _check_url_public,
-    _shell,
-    _ShellArgs,
+    _is_public_ip,
     builtin_registry,
 )
 
 
 async def test_shell_rejects_parent_escape(tmp_path):
     reg = builtin_registry(workspace_dir=str(tmp_path))
-    tool = next(t for t in reg._tools.values() if t.name == "shell")
     result, _ = await reg.call("shell", {"command": "cat ../.env"})
     assert result.ok is False
     assert "escapes workspace" in result.output

@@ -62,7 +62,7 @@ def _update(text, user_id=42, name="Syed"):
 async def test_inbound_message_dispatched():
     _me()
     _updates_route([_update("hello actlet")])
-    ch = TelegramChannel(TOKEN)
+    ch = TelegramChannel(TOKEN, allowed_users={"42"})
     received: list[InboundMessage] = []
     await ch.start(received.append)
     for _ in range(100):

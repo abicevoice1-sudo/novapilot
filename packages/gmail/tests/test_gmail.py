@@ -96,7 +96,8 @@ async def test_channel_hands_unseen_to_agent():
         async def on_message(m: InboundMessage):
             received.append(m)
 
-        ch = GmailChannel(lambda: GmailClient("me@gmail.com", "pw"))
+        ch = GmailChannel(lambda: GmailClient("me@gmail.com", "pw"),
+                          allowed_senders={"alice@example.com"})
         await ch._check(on_message, InboundMessage)
         assert len(received) == 1
         assert received[0].channel == "gmail"
