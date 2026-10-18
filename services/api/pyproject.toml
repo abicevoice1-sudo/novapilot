@@ -13,7 +13,7 @@ dependencies = [
   "litellm>=1.60",
   "langgraph>=1.2",
   "langgraph-checkpoint-sqlite>=2.0",
-  # novapilot-gateway and novapilot-agent-core are installed separately (../packages/*)
+  # novapilot-* are installed separately (../packages/*)
 ]
 
 [project.optional-dependencies]

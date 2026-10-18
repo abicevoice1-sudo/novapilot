@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from novapilot_agent import TaskRunner
 from novapilot_agent.tools import builtin_registry
+from novapilot_browser import BrowserSession
+from novapilot_browser.tools import register_browser_tools
 from novapilot_gateway import ModelGateway
 from novapilot_memory.tools import register_memory_tools
 
@@ -11,11 +15,36 @@ from .config import settings
 from .task_store import SqlTaskStore
 
 _runner: TaskRunner | None = None
+_browser: BrowserSession | None = None
+
+
+def shots_dir() -> Path:
+    d = Path(settings.workspace_dir) / "browser-shots"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+async def get_browser_session() -> BrowserSession:
+    """Lazy singleton: Chromium starts on first browser tool use, not at boot."""
+    global _browser
+    if _browser is None:
+        domains = [d.strip() for d in settings.browser_allowed_domains.split(",") if d.strip()]
+        _browser = BrowserSession(shots_dir=shots_dir(), allowed_domains=domains)
+        await _browser.start()
+    return _browser
+
+
+async def close_browser_session() -> None:
+    global _browser
+    if _browser is not None:
+        await _browser.close()
+        _browser = None
 
 
 def build_runner(memory_service) -> TaskRunner:
     registry = builtin_registry()
     register_memory_tools(registry, memory_service, lambda: settings.memory_namespace)
+    register_browser_tools(registry, get_browser_session)
 
     def gateway_factory() -> ModelGateway:
         return ModelGateway(

@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     memory_path: str = "./memories.db"
     memory_namespace: str = "default"
 
+    # Browser workspace (M5)
+    workspace_dir: str = "./workspace"
+    # Comma-separated domains the agent browser may visit. Empty = unrestricted.
+    browser_allowed_domains: str = ""
+
     # Security: if NOVAPILOT_TOKEN is set, /api/* requires Bearer auth.
     # Unset = open (local dev default), with a logged warning.
     novapilot_token: str = ""

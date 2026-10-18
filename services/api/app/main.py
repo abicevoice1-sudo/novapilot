@@ -16,7 +16,7 @@ from .auth import auth_warning
 from .config import settings
 from .db import init_db
 from .logging_config import configure_logging
-from .routers import chat, conversations, memories, models, tasks
+from .routers import chat, conversations, memories, models, shots, tasks
 
 configure_logging(settings.log_level)
 
@@ -25,7 +25,7 @@ configure_logging(settings.log_level)
 async def lifespan(app: FastAPI):
     await init_db()
     auth_warning()
-    from .agent import build_runner, override_runner
+    from .agent import build_runner, close_browser_session, override_runner
     from .memory import close_memory_service, get_memory_service
 
     if get_runner_or_none() is None:  # tests may inject their own runner
@@ -35,6 +35,7 @@ async def lifespan(app: FastAPI):
     await runner.reconcile()  # tasks orphaned by a restart become resumable
     yield
     await runner.aclose()
+    await close_browser_session()
     await close_memory_service()
 
 
@@ -50,6 +51,7 @@ app.include_router(models.router)
 app.include_router(conversations.router)
 app.include_router(tasks.router)
 app.include_router(memories.router)
+app.include_router(shots.router)
 
 
 @app.get("/health")

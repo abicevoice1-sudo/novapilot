@@ -2,7 +2,7 @@
 
 NovaPilot is an independent, open-source personal AI agent: it **remembers**, **researches**, **plans**, **executes**, **learns from feedback**, and keeps working on your approved goals while you're away.
 
-**Status: Milestone 4 — memory (2026-10-18).** Nova remembers: user-owned long-term memory (readable, editable, deletable, exportable — no hidden state), recalled automatically in chat, searchable by the agent during tasks, with secrets redacted on every write. Milestones 5–7 (browser, scheduler, hardening) are next — see `docs/roadmap.md`. Nothing here is mocked and presented as working; `docs/roadmap.md` tracks exactly what's real.
+**Status: Milestone 5 — browser workspace (2026-10-18).** Nova can now drive a real Chromium: scoped navigation, approval-gated clicks/fills, screenshots at every step shown in the task view. Memory (M4) and the agent core (M3) all live. Milestones 6–7 (scheduler, hardening) are next — see `docs/roadmap.md`. Nothing here is mocked and presented as working; `docs/roadmap.md` tracks exactly what's real.
 
 ## Why NovaPilot
 
@@ -39,7 +39,7 @@ See `docs/setup.md` for the full setup (docker-compose, dev mode, verification).
 | 2 — Running foundation | FastAPI + React chat (SSE) + LiteLLM gateway (Ollama default, budgets) + persistence | ✅ done 2026-10-18 |
 | 3 — Agent core | LangGraph plan→act→verify, approvals, budgets, receipts | ✅ done 2026-10-18 |
 | 4 — Memory | user-owned memory (SQLite+FTS5, mem0 adapter), agent tools, chat recall, redaction | ✅ done 2026-10-18 |
-| 5 — Browser & files | Playwright module, sandboxed files, injection evals | planned |
+| 5 — Browser workspace | Playwright + scoped nav, approval-gated actions, screenshots in UI | ✅ done 2026-10-18 |
 | 6 — Scheduling & proactivity | Persistent scheduler, quiet hours, global pause | planned |
 | 7 — Integrations & multi-agent | Channels, skills, specialist subagents | planned |
 | 8 — Quality & release | Full test suites, published evals, v1.0.0 | planned |

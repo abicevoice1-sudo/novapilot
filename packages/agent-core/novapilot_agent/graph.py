@@ -185,7 +185,14 @@ def _execute_node(registry: ToolRegistry) -> Any:
             await _emit(config, "tool_called", {"step": step, "attempt": attempt})
             result, receipt = await registry.call(step["tool"], step["args"])
             await _emit(
-                config, "tool_result", {"step_id": step["id"], "ok": result.ok, "receipt": receipt}
+                config,
+                "tool_result",
+                {
+                    "step_id": step["id"],
+                    "ok": result.ok,
+                    "receipt": receipt,
+                    "artifacts": result.artifacts,
+                },
             )
             if result.ok:
                 break

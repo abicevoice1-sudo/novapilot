@@ -377,3 +377,20 @@ export const extractMemories = (conversationId: string) =>
     `/api/conversations/${encodeURIComponent(conversationId)}/extract-memories`,
     { method: 'POST' },
   )
+
+// Browser screenshots. The endpoint requires the same Bearer auth as the rest
+// of the API, but <img> tags can't set headers, so this returns a plain URL
+// against the same origin (Vite dev proxy / nginx both serve /api). When no
+// token is set the API is open and images load directly; when a token IS set
+// the image request 401s — callers must handle onError gracefully.
+export const shotUrl = (name: string): string => `/api/shots/${encodeURIComponent(name)}`
+
+// Extract the screenshot artifact name from a task event payload, if present.
+export const shotNameOf = (evt: TaskEvent): string | null => {
+  const artifacts = evt.artifacts
+  if (artifacts && typeof artifacts === 'object' && !Array.isArray(artifacts)) {
+    const shot = (artifacts as Record<string, unknown>).shot
+    if (typeof shot === 'string' && shot.length > 0) return shot
+  }
+  return null
+}

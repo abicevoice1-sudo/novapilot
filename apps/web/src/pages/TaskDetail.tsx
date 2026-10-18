@@ -1,6 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import type { TaskDetail, TaskEvent, TaskStatus, TaskStep } from '../api'
-import { approveTask, cancelTask, getTask, pauseTask, resumeTask, streamTaskEvents } from '../api'
+import {
+  approveTask,
+  cancelTask,
+  getTask,
+  pauseTask,
+  resumeTask,
+  shotNameOf,
+  shotUrl,
+  streamTaskEvents,
+} from '../api'
 import { StatusPill, formatTime } from './Tasks'
 
 const EVENT_META: Record<string, { icon: string; label: string; tone: string }> = {
@@ -58,6 +67,54 @@ interface FeedEntry {
   key: number
   evt: TaskEvent
   at: Date
+}
+
+// Browser screenshot: thumbnail in the feed / preview in the header.
+// <img> can't send the Bearer header, so if a token is set the request 401s —
+// show a subtle note instead of a broken image. (No token set = API open, loads fine.)
+function ShotImage({
+  name,
+  className,
+  caption,
+}: {
+  name: string
+  className?: string
+  caption?: string
+}): React.ReactElement {
+  const [failed, setFailed] = useState(false)
+  const url = shotUrl(name)
+  if (failed) {
+    return (
+      <p className="text-[11px] italic text-zinc-600">
+        screenshot unavailable{typeof localStorage !== 'undefined' && localStorage.getItem('novapilot_token') ? ' (auth)' : ''}
+      </p>
+    )
+  }
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className="group inline-block"
+      title="Open full screenshot in a new tab"
+    >
+      <img
+        src={url}
+        alt={caption ?? 'Browser screenshot'}
+        loading="lazy"
+        onError={() => setFailed(true)}
+        className={`rounded-lg border border-zinc-700/60 object-cover transition group-hover:border-zinc-500 ${className ?? ''}`}
+      />
+    </a>
+  )
+}
+
+function ShotLabel(): React.ReactElement {
+  return (
+    <span className="mb-1 inline-block rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-400">
+      screenshot
+    </span>
+  )
 }
 
 const TERMINAL: TaskStatus[] = ['completed', 'failed', 'cancelled']
@@ -230,6 +287,15 @@ export default function TaskDetail({ id, onBack }: TaskDetailProps): React.React
   const showApproval = detail.status === 'waiting_approval' && pendingApproval
   const showError = (detail.status === 'failed' || detail.status === 'paused') && detail.error
 
+  // Latest browser screenshot across the live feed (updates as events stream in).
+  const latestShot: string | null = (() => {
+    for (let i = feed.length - 1; i >= 0; i--) {
+      const shot = shotNameOf(feed[i].evt)
+      if (shot) return shot
+    }
+    return null
+  })()
+
   return (
     <div className="mx-auto flex h-full max-w-4xl flex-col px-4 py-6">
       <button onClick={onBack} className="mb-4 self-start text-sm text-zinc-400 hover:text-zinc-200">
@@ -262,6 +328,17 @@ export default function TaskDetail({ id, onBack }: TaskDetailProps): React.React
           </div>
         )}
       </div>
+
+      {/* Latest browser view */}
+      {latestShot && (
+        <div className="mb-4 rounded-xl border border-zinc-800 bg-zinc-900/40 p-3">
+          <div className="mb-2 flex items-center gap-2">
+            <span className="text-sm">🖥️</span>
+            <p className="text-sm font-medium text-zinc-300">Latest browser view</p>
+          </div>
+          <ShotImage name={latestShot} className="w-full max-w-xl" caption="Latest browser view" />
+        </div>
+      )}
 
       {/* Action + error banners */}
       {actionError && (
@@ -402,6 +479,8 @@ export default function TaskDetail({ id, onBack }: TaskDetailProps): React.React
                 {feed.map(({ key, evt, at }) => {
                   const meta = eventMeta(String(evt.type))
                   const summary = eventSummary(evt)
+                  const shot =
+                    String(evt.type) === 'tool_result' ? shotNameOf(evt) : null
                   return (
                     <li key={key} className="flex items-start gap-2 text-xs">
                       <span className={`mt-0.5 w-5 shrink-0 text-center ${meta.tone}`}>
@@ -410,6 +489,14 @@ export default function TaskDetail({ id, onBack }: TaskDetailProps): React.React
                       <div className="min-w-0 flex-1">
                         <p className={`font-medium ${meta.tone}`}>{meta.label}</p>
                         {summary && <p className="mt-0.5 break-words text-zinc-500">{summary}</p>}
+                        {shot && (
+                          <div className="mt-1.5">
+                            <ShotLabel />
+                            <div>
+                              <ShotImage name={shot} className="w-64" />
+                            </div>
+                          </div>
+                        )}
                         <p className="mt-0.5 text-[10px] text-zinc-600">
                           {at.toLocaleTimeString()}
                         </p>

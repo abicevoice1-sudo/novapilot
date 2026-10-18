@@ -14,7 +14,7 @@ import logging
 import shlex
 import time
 from collections.abc import Awaitable, Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import httpx
@@ -38,6 +38,7 @@ class ToolResult:
     output: str
     verification: str = ""
     duration_ms: int = 0
+    artifacts: dict = field(default_factory=dict)  # e.g. {"shot": "shots/shot-0001.png"}
 
 
 @dataclass

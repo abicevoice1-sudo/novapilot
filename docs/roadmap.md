@@ -44,12 +44,20 @@ Milestones ship as small, testable vertical slices. A milestone is **not complet
 
 **Acceptance:** a fact saved in one session is recalled in a later one (verified: add → chat injects → delete → search/recall/export all clean); the user can read every memory in the UI; deleting is honored everywhere. Recall across restarts: the store is a plain SQLite file — restart-safe by construction.
 
-## Milestone 5 — Browser & files
+## Milestone 5 — Browser workspace ✅ (2026-10-18)
 
-- [ ] Playwright browser module: local-first, persistent profiles, human-takeover view
-- [ ] Sandboxed file ops + artifact creation; action receipts visible in UI
-- [ ] Stagehand-pattern credential entry (secrets never reach the model)
-- [ ] Injection evals in `tests/security/` passing
+- [x] `novapilot-browser` package: real Chromium via Playwright (headless), lazy start
+- [x] Scoped navigation (`BROWSER_ALLOWED_DOMAINS`; http(s) only)
+- [x] 9 agent tools (open/snapshot/read/click/fill/select/press/back/screenshot) —
+      ALL risk=high + approval-gated; every action screenshotted, receipts in the
+      task event stream, screenshots served at `GET /api/shots/{name}`
+- [x] Task detail UI shows per-step screenshots + latest browser view
+- [x] Safety doc (`docs/browser.md`): no credential autofill, sign-in is human-takeover
+
+**Acceptance:** the agent ran a demo flight search end-to-end on real Chromium
+(open → fill origin → fill destination → submit → read results), 5 approval
+gates (each approved), 4 screenshots, task completed. Verified live 2026-10-18.
+Deferred: file sandbox tightening (Docker), injection evals — folded into M7.
 
 **Acceptance:** research task produces a cited report; login flow works without the password touching the model; planted injection in a test page is refused.
 
