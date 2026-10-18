@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+uv.lock
+
+# Env / secrets — NEVER commit real values
+.env
+
+# Data (local-first; user data stays on their machine)
+*.db
+*.db-journal
+novapilot-data/
+
+# Frontend
+apps/web/node_modules/
+apps/web/dist/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/

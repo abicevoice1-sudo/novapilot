@@ -1,0 +1,23 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        working-directory: services/api
+        run: uv pip install --system -e ".[test]" && uv pip install --system ruff
+      - name: Lint
+        working-directory: services/api
+        run: ruff check app tests
+      - name: Test
+        working-directory: services/api
+        run: pytest -q
