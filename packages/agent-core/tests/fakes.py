@@ -41,13 +41,14 @@ class MemoryTaskStore:
         self._events = {}
         self._seq = 0
 
-    async def create(self, goal, model, thread_id):
+    async def create(self, goal, model, thread_id, source=None):
         self._seq += 1
         tid = f"t{self._seq}"
         self.tasks[tid] = {
             "id": tid,
             "goal": goal,
             "model": model,
+            "source": source,
             "thread_id": thread_id,
             "status": "pending",
             "current_step": 0,

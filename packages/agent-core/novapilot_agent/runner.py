@@ -63,13 +63,25 @@ class TaskRunner:
 
     # ------------------------------------------------------------ lifecycle
 
-    async def create_task(self, goal: str, model: str | None = None) -> str:
+    async def create_task(
+        self,
+        goal: str,
+        model: str | None = None,
+        preapproved_tools: list[str] | None = None,
+        source: str | None = None,
+    ) -> str:
+        """Create and drive a task.
+
+        preapproved_tools: tool names that skip approval gates (schedule-granted;
+        every skip is audit-logged). source: e.g. "schedule:<id>" for attribution.
+        """
         if self.store is None:
             raise RuntimeError("TaskRunner needs a TaskStore")
         thread_id = f"task-{uuid.uuid4().hex[:12]}"
-        task_id = await self.store.create(goal, model, thread_id)
+        task_id = await self.store.create(goal, model, thread_id, source=source)
         self._ensure_runtime(task_id)
         self._controls[task_id]["gateway"] = self.gateway_factory()
+        self._controls[task_id]["preapproved_tools"] = set(preapproved_tools or [])
         await self.store.update(task_id, status="running")
         self._tasks[task_id] = asyncio.create_task(
             self._drive(task_id, thread_id, {"goal": goal, "model": model})

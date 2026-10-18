@@ -163,7 +163,12 @@ def _execute_node(registry: ToolRegistry) -> Any:
             await _emit(config, "budget_exceeded", {"message": str(e), "usage": gateway.usage()})
             return {"status": "paused", "error": f"Budget exceeded: {e}"}
 
-        if tool.requires_approval and step["id"] not in cfg.get("approvals", {}):
+        preapproved = control.get("preapproved_tools", set())
+        if (
+            tool.requires_approval
+            and tool.name not in preapproved
+            and step["id"] not in cfg.get("approvals", {})
+        ):
             # On resume the node re-executes: don't re-emit the request event.
             seen = control.setdefault("interrupts_emitted", set())
             if step["id"] not in seen:
@@ -177,6 +182,18 @@ def _execute_node(registry: ToolRegistry) -> Any:
                 step = {**step, "status": "skipped", "result": "rejected by user"}
                 plan = [s if s["id"] != step["id"] else step for s in state["plan"]]
                 return {"plan": plan, "step_index": idx + 1}
+        elif tool.requires_approval and tool.name in preapproved:
+            # Schedule-granted pre-approval: audit-logged, never silent.
+            await _emit(
+                config,
+                "approval_decided",
+                {
+                    "step_id": step["id"],
+                    "approved": True,
+                    "preapproved": True,
+                    "note": f"{tool.name} pre-approved by schedule",
+                },
+            )
 
         result = None
         receipt: dict = {}

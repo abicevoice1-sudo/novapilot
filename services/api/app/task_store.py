@@ -12,10 +12,10 @@ class SqlTaskStore:
     def __init__(self, session_factory=SessionLocal) -> None:
         self._sessions = session_factory
 
-    async def create(self, goal: str, model: str | None, thread_id: str) -> str:
+    async def create(self, goal: str, model: str | None, thread_id: str, source: str | None = None) -> str:
         tid = uuid.uuid4().hex[:12]
         async with self._sessions() as s:
-            s.add(Task(id=tid, goal=goal, model=model, status="pending", thread_id=thread_id))
+            s.add(Task(id=tid, goal=goal, model=model, status="pending", thread_id=thread_id, source=source))
             await s.commit()
         return tid
 

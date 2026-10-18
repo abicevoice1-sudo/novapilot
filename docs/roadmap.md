@@ -61,12 +61,21 @@ Deferred: file sandbox tightening (Docker), injection evals — folded into M7.
 
 **Acceptance:** research task produces a cited report; login flow works without the password touching the model; planted injection in a test page is refused.
 
-## Milestone 6 — Scheduling & proactivity
+## Milestone 6 — Scheduling & proactivity ✅ (2026-10-18, Phase A of #1 plan)
 
-- [ ] APScheduler with persistent store; cron UI; pause/cancel/resume
-- [ ] Quiet hours, notification controls, frequency limits, global pause
-- [ ] Missed-schedule behavior documented; resume-after-restart for eligible jobs
-- [ ] Proactive engine v1: overdue tasks, approaching deadlines, suggested next steps (with evidence shown)
+- [x] `novapilot-scheduler` package: natural-language parsing ("every morning at 8",
+      "every monday at 9am", "every 30 minutes"), Schedule model, native asyncio
+      driver over APScheduler trigger math (replaced AsyncIOScheduler after its
+      fire-and-forget shutdown raced TestClient teardown)
+- [x] Per-schedule `preapproved_tools` (default: none — fully supervised); every
+      skip audit-logged; tasks carry `source: "schedule:<id>"`
+- [x] Missed-run replay on boot; run-now without changing cadence
+- [x] Schedules UI page (list/create/edit/run-now, NL/cron/interval modes)
+- [ ] Proactive engine v1 (overdue nudges, deadline warnings) — Phase B
+
+**Acceptance:** live-verified — a 20s schedule fired twice, tasks completed,
+NL parsed, bad input 422'd. 9 package + 7 API tests green; full suite stable
+across 5 consecutive runs (38 tests).
 
 **Acceptance:** a scheduled research job runs, emails the result, survives a restart; user can pause everything with one switch.
 

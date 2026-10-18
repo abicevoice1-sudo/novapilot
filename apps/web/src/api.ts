@@ -394,3 +394,64 @@ export const shotNameOf = (evt: TaskEvent): string | null => {
   }
   return null
 }
+
+/* ------------------------------------------------------------------ */
+/* Schedules (Milestone 6 contract)                                    */
+/* ------------------------------------------------------------------ */
+
+export interface Schedule {
+  id: string
+  name: string
+  goal: string
+  cron: string | null
+  interval_sec: number | null
+  when: string
+  preapproved_tools: string[]
+  enabled: boolean
+  last_run_at: string | null
+  last_task_id: string | null
+  next_run_at: string | null
+  run_count: number
+  created_at: string
+}
+
+export type ScheduleTrigger =
+  | { mode: 'when'; when: string }
+  | { mode: 'cron'; cron: string }
+  | { mode: 'interval'; interval_sec: number }
+
+export interface ScheduleCreate {
+  name: string
+  goal: string
+  preapproved_tools?: string[]
+}
+
+export const getSchedules = () => request<{ schedules: Schedule[] }>('/api/schedules')
+
+export const createSchedule = (body: ScheduleCreate & ScheduleTrigger) =>
+  request<Schedule>('/api/schedules', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+
+export const updateSchedule = (
+  id: string,
+  body: Partial<ScheduleCreate> & { enabled?: boolean } & Partial<ScheduleTrigger>,
+) =>
+  request<Schedule>(`/api/schedules/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+
+export const deleteSchedule = (id: string) =>
+  request<{ deleted: boolean }>(`/api/schedules/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  })
+
+export const runScheduleNow = (id: string) =>
+  request<{ fired: boolean; task_id: string }>(
+    `/api/schedules/${encodeURIComponent(id)}/run-now`,
+    { method: 'POST' },
+  )

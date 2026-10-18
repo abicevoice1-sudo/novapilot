@@ -64,16 +64,31 @@ jobs:
         working-directory: packages/browser
         run: pytest -q
 
-  api:
+  scheduler:
     runs-on: ubuntu-latest
-    needs: [gateway, agent-core, memory, browser]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Install
-        run: pip install -e ./packages/model-gateway -e ./packages/agent-core -e ./packages/memory -e ./packages/browser -e ./services/api && pip install pytest httpx
+        run: pip install -e ./packages/scheduler && pip install pytest pytest-asyncio ruff
+      - name: Lint
+        run: ruff check packages/scheduler
+      - name: Scheduler tests
+        working-directory: packages/scheduler
+        run: pytest -q
+
+  api:
+    runs-on: ubuntu-latest
+    needs: [gateway, agent-core, memory, browser, scheduler]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ./packages/model-gateway -e ./packages/agent-core -e ./packages/memory -e ./packages/browser -e ./packages/scheduler -e ./services/api && pip install pytest httpx
       - name: Lint
         run: ruff check services/api
       - name: API tests

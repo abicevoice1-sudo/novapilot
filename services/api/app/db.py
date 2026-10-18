@@ -53,6 +53,31 @@ class Task(Base):
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     usage_json: Mapped[str] = mapped_column(Text, default="{}")
+    source: Mapped[str | None] = mapped_column(String(100), nullable=True)  # e.g. "schedule:<id>"
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, onupdate=_utcnow
+    )
+
+
+class Schedule(Base):
+    """A recurring agent task: 'every morning at 8, brief me on X'."""
+
+    __tablename__ = "schedules"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: uuid.uuid4().hex[:12])
+    name: Mapped[str] = mapped_column(String(200))
+    goal: Mapped[str] = mapped_column(Text)
+    # Trigger: exactly one of cron / interval_sec is set.
+    cron: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    interval_sec: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # Tools this schedule may use without asking (explicit blast radius; default: none).
+    preapproved_tools_json: Mapped[str] = mapped_column(Text, default="[]")
+    enabled: Mapped[bool] = mapped_column(default=True)
+    last_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_task_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    next_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    run_count: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow, onupdate=_utcnow
@@ -76,6 +101,14 @@ SessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=
 async def init_db() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Lightweight additive migration for pre-existing DBs (no alembic yet).
+        from sqlalchemy import text as _text
+
+        for ddl in ("ALTER TABLE tasks ADD COLUMN source VARCHAR(100)",):
+            try:
+                await conn.execute(_text(ddl))
+            except Exception:  # noqa: BLE001, S110 — column already exists
+                pass
 
 
 async def get_session() -> AsyncSession:  # FastAPI dependency
