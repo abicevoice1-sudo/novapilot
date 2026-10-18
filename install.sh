@@ -1,24 +1,29 @@
 #!/usr/bin/env bash
-# Actlet one-line installer.
+# Actlet one-click installer.
 # Usage: curl -fsSL https://raw.githubusercontent.com/abicevoice1-sudo/actlet/master/install.sh | bash
-# Or locally: ./install.sh
+# Or locally: ./install.sh [--no-start]
 #
-# What it does:
-#   1. Checks for python3.12+, node, npm
-#   2. Creates a venv and installs all Actlet packages (editable)
-#   3. Builds the web UI
-#   4. Writes .env from .env.example (if missing)
-#   5. Prints next steps
+# One command does everything:
+#   1. Checks prerequisites (python3.12+, node, npm)
+#   2. Creates venv, installs all Actlet packages
+#   3. Installs Playwright Chromium for the browser workspace
+#   4. Builds the web UI
+#   5. Writes .env with a secure auto-generated ACTLET_TOKEN
+#   6. Starts the API and opens your browser to the Actlet UI
 #
-# Nothing is started automatically. No keys required for the default
-# local setup (Ollama at http://localhost:11434).
+# No API keys needed — local Ollama models are the default ($0).
 
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$REPO_DIR"
 
-echo "==> Actlet installer"
+START=1
+for arg in "$@"; do
+  [ "$arg" = "--no-start" ] && START=0
+done
+
+echo "==> Actlet one-click installer"
 echo ""
 
 # --- Prerequisites ---
@@ -44,48 +49,94 @@ PIP="$VENV/bin/pip"
 "$PIP" install -q --upgrade pip
 
 # --- Python packages ---
-echo "==> Installing Actlet packages (editable)"
+echo "==> Installing Actlet packages"
 "$PIP" install -q -e ./packages/model-gateway -e ./packages/agent-core \
   -e ./packages/memory -e ./packages/scheduler -e ./packages/learning \
   -e ./packages/browser -e ./packages/channels -e ./packages/mcp \
-  -e ./services/api
+  -e ./packages/gmail -e ./packages/calendar -e ./services/api --no-deps
+"$PIP" install -q fastapi "uvicorn[standard]" sqlalchemy aiosqlite pydantic \
+  pydantic-settings sse-starlette langgraph langchain-core langgraph-checkpoint-sqlite \
+  httpx websockets python-multipart jinja2 caldav croniter greenlet tzlocal requests \
+  playwright 2>/dev/null || echo "    WARNING: some optional deps failed — core still works"
 echo "    done"
 
-# --- Playwright browsers (optional, needed for the browser workspace) ---
-if "$VENV/bin/python" -c "import playwright" 2>/dev/null; then
-  echo "==> Installing Playwright Chromium (skip with ACTLET_SKIP_BROWSERS=1)"
-  if [ "${ACTLET_SKIP_BROWSERS:-0}" != "1" ]; then
-    "$VENV/bin/playwright" install chromium --with-deps 2>/dev/null \
-      || "$VENV/bin/playwright" install chromium \
-      || echo "    WARNING: Chromium install failed — browser features need it. Re-run: .venv/bin/playwright install chromium"
-  fi
+# --- Playwright Chromium ---
+if [ "${ACTLET_SKIP_BROWSERS:-0}" != "1" ]; then
+  echo "==> Installing Playwright Chromium"
+  "$VENV/bin/playwright" install chromium 2>/dev/null \
+    || echo "    WARNING: Chromium install failed — browser features need it."
 fi
 
 # --- Web UI ---
 echo "==> Building web UI"
 (cd apps/web && npm ci -q && npm run build -s)
-echo "    done (apps/web/dist)"
+echo "    done"
 
-# --- Config ---
-if [ ! -f "$REPO_DIR/.env" ]; then
-  cp "$REPO_DIR/.env.example" "$REPO_DIR/.env"
-  echo "==> Wrote .env from .env.example (edit it to add keys)"
-else
-  echo "==> .env already exists — leaving it alone"
+# --- Config with auto-generated token ---
+ENV_FILE="$REPO_DIR/.env"
+if [ ! -f "$ENV_FILE" ]; then
+  cp "$REPO_DIR/.env.example" "$ENV_FILE"
+fi
+if ! grep -q "^ACTLET_TOKEN=.\+" "$ENV_FILE" 2>/dev/null; then
+  TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+  # Replace empty/commented ACTLET_TOKEN line, or append.
+  if grep -q "^#\?ACTLET_TOKEN=" "$ENV_FILE"; then
+    sed -i.bak "s|^#\?ACTLET_TOKEN=.*|ACTLET_TOKEN=$TOKEN|" "$ENV_FILE" && rm -f "$ENV_FILE.bak"
+  else
+    echo "ACTLET_TOKEN=$TOKEN" >> "$ENV_FILE"
+  fi
+  echo "==> Generated a secure ACTLET_TOKEN in .env"
+fi
+TOKEN="$(grep "^ACTLET_TOKEN=" "$ENV_FILE" | cut -d= -f2-)"
+
+if [ "$START" = "0" ]; then
+  echo ""
+  echo "Installed (not started — you passed --no-start)."
+  echo "Start with: .venv/bin/uvicorn app.main:app --app-dir services/api"
+  exit 0
 fi
 
-echo ""
-echo "================================================================"
-echo "  Actlet installed. Next steps:"
-echo ""
-echo "  1. (Optional) Start Ollama for free local models:"
-echo "       ollama pull gpt-oss:20b && ollama serve"
-echo ""
-echo "  2. Start the API:"
-echo "       .venv/bin/uvicorn app.main:app --app-dir services/api"
-echo ""
-echo "  3. Open http://localhost:8000 — the web UI is served from the API."
-echo ""
-echo "  Optional: set a ACTLET_TOKEN in .env to lock the API with"
-echo "  bearer auth. Add Telegram / MCP config in .env to connect channels."
-echo "================================================================"
+# --- Start ---
+echo "==> Starting Actlet"
+PID_FILE="$REPO_DIR/.actlet.pid"
+if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
+  echo "    already running (pid $(cat "$PID_FILE"))"
+else
+  nohup "$VENV/bin/uvicorn" app.main:app --app-dir services/api \
+    --host 127.0.0.1 --port 8000 > "$REPO_DIR/.actlet.log" 2>&1 &
+  echo $! > "$PID_FILE"
+  # Wait for health (max ~20s).
+  for _ in $(seq 1 40); do
+    if curl -fsS -m 2 http://127.0.0.1:8000/api/health >/dev/null 2>&1; then
+      break
+    fi
+    sleep 0.5
+  done
+fi
+
+URL="http://localhost:8000"
+if curl -fsS -m 2 http://127.0.0.1:8000/api/health >/dev/null 2>&1; then
+  echo ""
+  echo "================================================================"
+  echo "  ⚡ Actlet is running!"
+  echo ""
+  echo "  Open:  $URL"
+  echo "  Token: $TOKEN"
+  echo "         (the web UI will ask for this once)"
+  echo ""
+  echo "  Logs:  tail -f .actlet.log"
+  echo "  Stop:  kill \$(cat .actlet.pid)"
+  echo "================================================================"
+  # Open the browser (best effort, never fails the install).
+  if command -v xdg-open >/dev/null 2>&1; then
+    (xdg-open "$URL" >/dev/null 2>&1 &)
+  elif command -v open >/dev/null 2>&1; then
+    (open "$URL" >/dev/null 2>&1 &)
+  fi
+else
+  echo ""
+  echo "Actlet installed but the API did not become healthy."
+  echo "Check .actlet.log, then start manually:"
+  echo "  .venv/bin/uvicorn app.main:app --app-dir services/api"
+  exit 1
+fi
