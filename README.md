@@ -5,13 +5,15 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/)
 [![Version](https://img.shields.io/badge/version-v0.8.0-brightgreen.svg)](https://github.com/abicevoice1-sudo/actlet/releases)
-[![Tests](https://img.shields.io/badge/tests-170%2B%20green-brightgreen.svg)](#verification)
+[![Tests](https://img.shields.io/badge/tests-190%2B%20green-brightgreen.svg)](#verification)
+
+## One command. Zero to running.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/abicevoice1-sudo/actlet/master/install.sh | bash
-.venv/bin/uvicorn app.main:app --app-dir services/api
-# open http://localhost:8000 — no API keys needed, local models by default
 ```
+
+That's it. It installs everything, generates your secure token, starts the server, and opens your browser to the Actlet UI. No API keys needed — local models by default, $0.
 
 ![Actlet driving a real browser](docs/assets/browser-demo.png)
 
