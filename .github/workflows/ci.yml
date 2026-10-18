@@ -133,7 +133,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install
-        run: pip install -e ./packages/model-gateway -e ./packages/agent-core -e ./packages/memory -e ./packages/browser -e ./packages/scheduler -e ./packages/learning -e ./packages/channels -e ./packages/mcp -e ./services/api && pip install pytest httpx ruff
+        run: pip install -e ./packages/model-gateway -e ./packages/agent-core -e ./packages/memory -e ./packages/browser -e ./packages/scheduler -e ./packages/learning -e ./packages/channels -e ./packages/mcp -e ./services/api && pip install pytest pytest-asyncio httpx ruff
       - name: Lint
         run: ruff check services/api
       - name: API tests
