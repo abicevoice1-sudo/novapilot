@@ -166,6 +166,22 @@ write_file → checkpoint_created event → revert succeeds).
 ruff clean. Honest limits: IMAP/SMTP untested against real Gmail here
 (needs a Google App Password); channel polling is 60s, not push.
 
+## Phase G — Calendar + multi-agent ✅ (2026-10-18)
+
+- [x] Calendar integration (`packages/calendar/`, CalDAV via `caldav` lib):
+      `calendar_list` (low risk) + `calendar_create` (high risk,
+      approval-gated) agent tools. Works with Google Calendar (App Password),
+      Nextcloud, Fastmail, iCloud. 5 tests, mocked CalDAV.
+- [x] Multi-agent delegation (`novapilot_agent/delegate.py`): `delegate` tool
+      with 4 specialist roles (researcher, coder, browser_operator,
+      communicator), each with a restricted toolset. Sub-agents share the
+      parent's approval queue, budget, and event stream; cannot delegate
+      further (no recursion). 5 tests.
+
+**Acceptance:** 5 calendar + 5 delegate tests green; 44 core + 53 API green;
+ruff clean. Honest limits: CalDAV untested against a real server here;
+sub-agents are sequential (no parallel fan-out yet).
+
 ## Principal technical risks & mitigations
 
 | Risk | Likelihood | Impact | Mitigation |

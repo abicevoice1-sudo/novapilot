@@ -53,6 +53,13 @@ class Settings(BaseSettings):
     # the window (run-now still works). Empty = no quiet hours.
     quiet_hours_start: str = ""
     quiet_hours_end: str = ""
+
+    # Calendar (Phase G): CalDAV endpoint + credentials. Unset = disabled.
+    # Google: https://apidata.googleusercontent.com/caldav/v2/YOU@gmail.com/events
+    # with an App Password (same as Gmail).
+    caldav_url: str = ""
+    caldav_username: str = ""
+    caldav_password: str = ""
     secret_key: str = "change-me"
 
     log_level: str = "INFO"

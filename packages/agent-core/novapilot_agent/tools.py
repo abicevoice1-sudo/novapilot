@@ -62,6 +62,15 @@ class ToolRegistry:
     def get(self, name: str) -> Tool | None:
         return self._tools.get(name)
 
+    def subset(self, names: list[str]) -> ToolRegistry:
+        """A new registry with only the named tools (missing names ignored)."""
+        sub = ToolRegistry()
+        for name in names:
+            tool = self._tools.get(name)
+            if tool is not None:
+                sub.register(tool)
+        return sub
+
     def specs(self) -> list[dict]:
         return [
             {

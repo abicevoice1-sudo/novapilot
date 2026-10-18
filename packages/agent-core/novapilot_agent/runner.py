@@ -20,9 +20,17 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langgraph.errors import GraphInterrupt
 from langgraph.types import Command
 
+from .delegate import SPECIALISTS, current_task_id
 from .graph import build_graph
 from .store import TaskStore
 from .tools import ToolRegistry, builtin_registry
+
+# Backwards-compat alias (graph.py used this name before the move).
+_current_task_id = current_task_id
+
+
+def _task_id() -> str | None:
+    return current_task_id.get()
 
 log = logging.getLogger("novapilot.runner")
 
@@ -246,3 +254,28 @@ class TaskRunner:
         except Exception:  # noqa: BLE001 — checkpoint read is best-effort
             values = {}
         return {**task, "plan": values.get("plan", []), "summary": values.get("summary")}
+
+    async def run_delegate(self, role: str, goal: str) -> str:
+        """Run a specialist sub-agent inline; returns its summary.
+
+        The sub-agent shares the parent task's approval queue, budget, and
+        event stream. Its toolset is restricted to the role; it cannot
+        delegate further.
+        """
+        task_id = current_task_id.get()
+        if task_id is None:
+            raise RuntimeError("delegate called outside a task")
+        spec = SPECIALISTS[role]
+        sub_registry = self.registry.subset(spec["tools"])
+        await self._ensure_ready()
+        sub_graph = build_graph(
+            sub_registry, self.checkpointer, self._skills_provider, self._checkpoint_manager
+        )
+        sub_thread = f"task-{task_id}-sub-{uuid.uuid4().hex[:8]}"
+        config = self._config(task_id, sub_thread)
+        emit = self._make_emit(task_id)
+        await emit("delegate_started", {"role": role, "goal": goal})
+        result = await sub_graph.ainvoke({"goal": goal}, config)
+        summary = result.get("summary", "") if isinstance(result, dict) else ""
+        await emit("delegate_done", {"role": role, "summary": summary[:500]})
+        return summary

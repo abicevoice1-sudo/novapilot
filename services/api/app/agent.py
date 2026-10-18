@@ -63,6 +63,15 @@ def build_runner(memory_service) -> TaskRunner:
             return GmailClient(settings.gmail_address, settings.gmail_app_password)
 
         register_gmail_tools(registry, _gmail_factory)
+    if settings.caldav_url and settings.caldav_username and settings.caldav_password:
+        from novapilot_calendar import CalendarClient, register_calendar_tools
+
+        def _cal_factory() -> CalendarClient:
+            return CalendarClient(
+                settings.caldav_url, settings.caldav_username, settings.caldav_password
+            )
+
+        register_calendar_tools(registry, _cal_factory)
 
     def gateway_factory() -> ModelGateway:
         return ModelGateway(
@@ -73,7 +82,7 @@ def build_runner(memory_service) -> TaskRunner:
             max_wallclock_sec=settings.task_max_wallclock_sec,
         )
 
-    return TaskRunner(
+    runner = TaskRunner(
         gateway_factory=gateway_factory,
         registry=registry,
         store=SqlTaskStore(),
@@ -81,6 +90,10 @@ def build_runner(memory_service) -> TaskRunner:
         skills_provider=skills_provider,
         checkpoint_manager=get_checkpoint_manager(),
     )
+    from novapilot_agent import register_delegate_tool
+
+    register_delegate_tool(registry, runner.run_delegate)
+    return runner
 
 
 def get_runner() -> TaskRunner:

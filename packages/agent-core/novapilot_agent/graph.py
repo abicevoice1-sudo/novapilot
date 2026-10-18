@@ -164,6 +164,10 @@ def _execute_node(registry: ToolRegistry, checkpoint_manager=None) -> Any:
     async def execute(state: AgentState, config: RunnableConfig) -> dict:
         cfg = _cfg(config)
         control = cfg.get("control", {})
+        # Make the task id visible to tools that need it (delegate).
+        from .delegate import current_task_id
+
+        current_task_id.set(cfg.get("task_id"))
         if control.get("cancel_requested"):
             await _emit(config, "task_cancelled", {"reason": "cancel requested"})
             return {"status": "cancelled"}
