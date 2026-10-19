@@ -9,7 +9,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from pydantic import BaseModel
 
 from actlet_agent.graph import build_graph
-from actlet_agent.tools import Tool, ToolRegistry, ToolResult, _ImageArgs, _generate_image
+from actlet_agent.tools import Tool, ToolRegistry, ToolResult, _generate_image, _ImageArgs
 
 from .fakes import ScriptedGateway
 
@@ -104,7 +104,8 @@ async def test_generate_image_both_fail_honest():
 
 
 def test_image_args_validation():
-    with pytest.raises(Exception):
+    from pydantic import ValidationError
+    with pytest.raises(ValidationError):
         _ImageArgs(prompt="ab")  # too short
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         _ImageArgs(prompt="x" * 501)  # too long
