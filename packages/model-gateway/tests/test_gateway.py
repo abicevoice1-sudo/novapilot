@@ -59,22 +59,23 @@ def make_gateway(**kw):
 async def test_chat_uses_default_model():
     gw = make_gateway()
     assert await gw.chat([{"role": "user", "content": "hi"}]) == "hello world"
-    assert gw.backend.calls == ["ollama/gpt-oss:20b"]
+    assert gw.backend.calls == ["nvidia_nim/meta/llama-3.3-70b-instruct"]
 
 
 async def test_chat_falls_back_on_failure():
-    backend = FakeBackend(fail_models={"ollama/gpt-oss:20b": ConnectionError("down")})
+    backend = FakeBackend(fail_models={"nvidia_nim/meta/llama-3.3-70b-instruct": ConnectionError("down")})
     gw = make_gateway(backend=backend)
     assert await gw.chat([{"role": "user", "content": "hi"}]) == "hello world"
-    assert backend.calls == ["ollama/gpt-oss:20b", "groq/gpt-oss-120b"]
+    assert backend.calls == ["nvidia_nim/meta/llama-3.3-70b-instruct", "groq/llama-3.3-70b-versatile"]
 
 
 async def test_chat_all_fail_raises_gateway_error():
     backend = FakeBackend(
         fail_models={
-            "ollama/gpt-oss:20b": ConnectionError("down"),
-            "groq/gpt-oss-120b": ConnectionError("down"),
+            "nvidia_nim/meta/llama-3.3-70b-instruct": ConnectionError("down"),
+            "groq/llama-3.3-70b-versatile": ConnectionError("down"),
             "gemini/gemini-2.5-flash": ConnectionError("down"),
+            "ollama/gpt-oss:20b": ConnectionError("down"),
         }
     )
     gw = make_gateway(backend=backend)
@@ -109,5 +110,5 @@ async def test_token_budget_accumulates():
 def test_list_models():
     gw = make_gateway()
     models = gw.list_models()
-    assert models[0].id == "ollama/gpt-oss:20b"
+    assert models[0].id == "nvidia_nim/meta/llama-3.3-70b-instruct"
     assert all(m.free for m in models)

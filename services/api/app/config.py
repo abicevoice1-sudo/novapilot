@@ -10,8 +10,8 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./actlet.db"
 
     # Model gateway
-    model_default: str = "ollama/gpt-oss:20b"
-    model_fallbacks: str = "groq/gpt-oss-120b,gemini/gemini-2.5-flash"
+    model_default: str = "nvidia_nim/meta/llama-3.3-70b-instruct"
+    model_fallbacks: str = "groq/llama-3.3-70b-versatile,gemini/gemini-2.5-flash,ollama/gpt-oss:20b"
     ollama_base_url: str = "http://localhost:11434"
 
     # Per-task budgets (enforced, not suggested)

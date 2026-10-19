@@ -93,7 +93,9 @@ We don't claim what we can't prove:
 
 ## Cost
 
-**$0 by default.** Local Ollama inference, 12 free cloud providers (Groq, Gemini, Cerebras, Mistral, NVIDIA, and more). See [docs/free-providers.md](docs/free-providers.md) for the full verified list.
+**$0 by default.** NVIDIA's free tier (Llama 3.3 70B) first when you add a key —
+no key at all and local Ollama still works, private and offline. 12 free cloud
+providers documented in [docs/free-providers.md](docs/free-providers.md).
 
 ## Security
 

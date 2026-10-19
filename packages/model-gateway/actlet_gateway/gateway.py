@@ -39,11 +39,17 @@ class ModelInfo:
 
 
 DEFAULT_CATALOG: tuple[ModelInfo, ...] = (
-    # $0, no key, no signup — local.
-    ModelInfo("ollama/gpt-oss:20b", "GPT-OSS 20B (local Ollama)", "ollama", True),
-    # Permanent free tiers, no credit card (verified Oct 2026).
-    ModelInfo("groq/gpt-oss-120b", "GPT-OSS 120B (Groq free tier)", "groq", True),
+    # Smart default first: best free 70B models (free key, no credit card).
+    ModelInfo(
+        "nvidia_nim/meta/llama-3.3-70b-instruct",
+        "Llama 3.3 70B (NVIDIA NIM, free tier)",
+        "nvidia",
+        True,
+    ),
+    ModelInfo("groq/llama-3.3-70b-versatile", "Llama 3.3 70B (Groq free tier)", "groq", True),
     ModelInfo("gemini/gemini-2.5-flash", "Gemini 2.5 Flash (AI Studio free tier)", "gemini", True),
+    # $0, no key, no signup — local fallback, always works.
+    ModelInfo("ollama/gpt-oss:20b", "GPT-OSS 20B (local Ollama)", "ollama", True),
     ModelInfo("openrouter/qwen/qwen3-32b:free", "Qwen3 32B (OpenRouter free)", "openrouter", True),
     ModelInfo("cerebras/llama-3.3-70b", "Llama 3.3 70B (Cerebras free tier)", "cerebras", True),
     ModelInfo("mistral/mistral-small-latest", "Mistral Small (Experiment tier)", "mistral", True),
@@ -93,8 +99,12 @@ class ModelGateway:
 
     def __init__(
         self,
-        default_model: str = "ollama/gpt-oss:20b",
-        fallbacks: tuple[str, ...] = ("groq/gpt-oss-120b", "gemini/gemini-2.5-flash"),
+        default_model: str = "nvidia_nim/meta/llama-3.3-70b-instruct",
+        fallbacks: tuple[str, ...] = (
+            "groq/llama-3.3-70b-versatile",
+            "gemini/gemini-2.5-flash",
+            "ollama/gpt-oss:20b",  # always works: local, private, offline
+        ),
         max_cost_usd: float = 0.50,
         max_tokens: int = 200_000,
         max_wallclock_sec: int = 1800,
