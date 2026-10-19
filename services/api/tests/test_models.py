@@ -17,7 +17,7 @@ def test_models_lists_catalog():
             assert r.status_code == 200
             body = r.json()
             assert body["default"] == "test/echo"
-            assert body["models"][0]["id"] == "ollama/gpt-oss:20b"
+            assert body["models"][0]["id"] == "nvidia_nim/meta/llama-3.3-70b-instruct"
             assert all("provider" in m for m in body["models"])
     finally:
         gateway_dep.override_gateway(None)
