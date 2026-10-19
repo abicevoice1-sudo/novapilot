@@ -66,7 +66,21 @@ function renderBlock(text: string, keyPrefix: string): React.ReactNode[] {
 
   for (const line of lines) {
     const t = line.trim()
-    if (/^#{1,3}\s/.test(t)) {
+    // Bare image URL on its own line → render inline image.
+    if (/^https?:\/\/\S+\.(png|jpe?g|gif|webp)(\?\S*)?$/.test(t) ||
+        /^https?:\/\/image\.pollinations\.ai\/\S+$/.test(t)) {
+      flushPara()
+      flushList()
+      out.push(
+        <img
+          key={`${keyPrefix}-img${i++}`}
+          src={t}
+          alt="Generated image"
+          className="my-2 w-64 rounded-lg border border-zinc-700"
+          loading="lazy"
+        />,
+      )
+    } else if (/^#{1,3}\s/.test(t)) {
       flushPara()
       flushList()
       const level = t.match(/^#+/)![0].length

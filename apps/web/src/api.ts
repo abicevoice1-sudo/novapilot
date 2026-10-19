@@ -438,6 +438,15 @@ export const shotNameOf = (evt: TaskEvent): string | null => {
   return null
 }
 
+export const imageUrlOf = (evt: TaskEvent): string | null => {
+  const artifacts = evt.artifacts
+  if (artifacts && typeof artifacts === 'object' && !Array.isArray(artifacts)) {
+    const url = (artifacts as Record<string, unknown>).image_url
+    if (typeof url === 'string' && url.length > 0) return url
+  }
+  return null
+}
+
 /* ------------------------------------------------------------------ */
 /* Schedules (Milestone 6 contract)                                    */
 /* ------------------------------------------------------------------ */

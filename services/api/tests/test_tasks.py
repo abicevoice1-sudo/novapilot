@@ -100,7 +100,7 @@ def _wait_status(c, tid, statuses, timeout=15):
 
 def test_create_and_run_to_completion(client):
     c, scripts = client
-    scripts.scripts = [_plan(("one", "echo_tool", {}), ("two", "echo_tool", {})), "All good."]
+    scripts.scripts = [_plan(("one", "echo_tool", {}), ("two", "echo_tool", {})), _json.dumps({"approved": True}), "All good."]
     r = c.post("/api/tasks", json={"goal": "say things"})
     assert r.status_code == 200
     tid = r.json()["id"]
@@ -113,7 +113,7 @@ def test_create_and_run_to_completion(client):
 
 def test_list_tasks(client):
     c, scripts = client
-    scripts.scripts = [_plan(("one", "echo_tool", {})), "done"]
+    scripts.scripts = [_plan(("one", "echo_tool", {})), _json.dumps({"approved": True}), "done"]
     c.post("/api/tasks", json={"goal": "listed goal"})
     tasks = c.get("/api/tasks").json()["tasks"]
     assert any(t["goal"] == "listed goal" for t in tasks)
@@ -121,7 +121,7 @@ def test_list_tasks(client):
 
 def test_events_sse_replays_and_streams(client):
     c, scripts = client
-    scripts.scripts = [_plan(("one", "echo_tool", {})), "done"]
+    scripts.scripts = [_plan(("one", "echo_tool", {})), _json.dumps({"approved": True}), "done"]
     tid = c.post("/api/tasks", json={"goal": "stream me"}).json()["id"]
     _wait_status(c, tid, ("completed",))
     with c.stream("GET", f"/api/tasks/{tid}/events") as r:
@@ -149,7 +149,7 @@ def test_events_sse_replays_and_streams(client):
 
 def test_approval_flow(client):
     c, scripts = client
-    scripts.scripts = [_plan(("danger", "danger_tool", {})), "done"]
+    scripts.scripts = [_plan(("danger", "danger_tool", {})), _json.dumps({"approved": True}), "done"]
     tid = c.post("/api/tasks", json={"goal": "do danger"}).json()["id"]
     _wait_status(c, tid, ("waiting_approval",))
     detail = c.get(f"/api/tasks/{tid}").json()
@@ -162,7 +162,7 @@ def test_approval_flow(client):
 
 def test_approve_rejected_skips_step(client):
     c, scripts = client
-    scripts.scripts = [_plan(("danger", "danger_tool", {})), "done"]
+    scripts.scripts = [_plan(("danger", "danger_tool", {})), _json.dumps({"approved": True}), "done"]
     tid = c.post("/api/tasks", json={"goal": "do danger"}).json()["id"]
     _wait_status(c, tid, ("waiting_approval",))
     c.post(f"/api/tasks/{tid}/approve", json={"approved": False})
@@ -172,7 +172,7 @@ def test_approve_rejected_skips_step(client):
 
 def test_approve_when_not_waiting_409(client):
     c, scripts = client
-    scripts.scripts = [_plan(("one", "echo_tool", {})), "done"]
+    scripts.scripts = [_plan(("one", "echo_tool", {})), _json.dumps({"approved": True}), "done"]
     tid = c.post("/api/tasks", json={"goal": "x"}).json()["id"]
     _wait_status(c, tid, ("completed",))
     r = c.post(f"/api/tasks/{tid}/approve", json={"approved": True})
@@ -181,7 +181,7 @@ def test_approve_when_not_waiting_409(client):
 
 def test_cancel_mid_run(client):
     c, scripts = client
-    scripts.scripts = [_plan(("slow", "slow_tool", {})), "done"]
+    scripts.scripts = [_plan(("slow", "slow_tool", {})), _json.dumps({"approved": True}), "done"]
     tid = c.post("/api/tasks", json={"goal": "go slow"}).json()["id"]
     time.sleep(0.5)
     r = c.post(f"/api/tasks/{tid}/cancel")

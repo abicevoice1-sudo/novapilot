@@ -4,6 +4,7 @@ import {
   approveTask,
   cancelTask,
   getTask,
+  imageUrlOf,
   makeSkill,
   pauseTask,
   resumeTask,
@@ -520,6 +521,8 @@ export default function TaskDetail({ id, onBack }: TaskDetailProps): React.React
                   const summary = eventSummary(evt)
                   const shot =
                     String(evt.type) === 'tool_result' ? shotNameOf(evt) : null
+                  const genImage =
+                    String(evt.type) === 'tool_result' ? imageUrlOf(evt) : null
                   return (
                     <li key={key} className="flex items-start gap-2 text-xs">
                       <span className={`mt-0.5 w-5 shrink-0 text-center ${meta.tone}`}>
@@ -534,6 +537,16 @@ export default function TaskDetail({ id, onBack }: TaskDetailProps): React.React
                             <div>
                               <ShotImage name={shot} className="w-64" />
                             </div>
+                          </div>
+                        )}
+                        {genImage && (
+                          <div className="mt-1.5">
+                            <img
+                              src={genImage}
+                              alt="Generated image"
+                              className="w-64 rounded-lg border border-zinc-700"
+                              loading="lazy"
+                            />
                           </div>
                         )}
                         <p className="mt-0.5 text-[10px] text-zinc-600">

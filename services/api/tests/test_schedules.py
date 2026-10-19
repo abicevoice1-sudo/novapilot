@@ -144,7 +144,7 @@ def test_crud_cycle(client):
 
 def test_run_now_creates_task(client):
     c, scripts = client
-    scripts.scripts = [_plan(("say hi", "echo_tool", {"text": "hello"})), "done"]
+    scripts.scripts = [_plan(("say hi", "echo_tool", {"text": "hello"})), _json.dumps({"approved": True}), "done"]
     sid = c.post("/api/schedules", json={"name": "t", "goal": "say hi", "when": "hourly"}).json()["id"]
     r = c.post(f"/api/schedules/{sid}/run-now")
     assert r.status_code == 200
@@ -166,7 +166,7 @@ def test_run_now_creates_task(client):
 
 def test_schedule_fires_on_trigger(client):
     c, scripts = client
-    scripts.scripts = [_plan(("say hi", "echo_tool", {"text": "hello"})), "done"]
+    scripts.scripts = [_plan(("say hi", "echo_tool", {"text": "hello"})), _json.dumps({"approved": True}), "done"]
     sid = c.post("/api/schedules", json={
         "name": "fast", "goal": "say hi", "interval_sec": 2}).json()["id"]
     try:
@@ -189,7 +189,7 @@ def test_schedule_fires_on_trigger(client):
 def test_preapproved_tools_skip_gates(client):
     c, scripts = client
     # danger_tool requires approval, but the schedule pre-approves it.
-    scripts.scripts = [_plan(("do danger", "danger_tool", {})), "done"]
+    scripts.scripts = [_plan(("do danger", "danger_tool", {})), _json.dumps({"approved": True}), "done"]
     sid = c.post("/api/schedules", json={
         "name": "p", "goal": "do danger", "when": "hourly",
         "preapproved_tools": ["danger_tool"],

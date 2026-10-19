@@ -243,6 +243,79 @@ def _check_url_public(url: str) -> str | None:
     return None
 
 
+class _ImageArgs(BaseModel):
+    prompt: str = Field(..., min_length=3, max_length=500)
+    width: int = Field(default=1024, ge=256, le=2048)
+    height: int = Field(default=1024, ge=256, le=2048)
+
+
+async def _generate_image(args: _ImageArgs) -> ToolResult:
+    """Generate an image: Pollinations.ai (free, no key) → HuggingFace fallback.
+
+    Pollinations has no SLA — it's a free community service. If it's slow or down,
+    we fall back to HuggingFace Inference (needs HF_TOKEN, free signup). If both
+    fail, we say so honestly instead of failing silently.
+    """
+    import os
+    import urllib.parse
+
+    prompt_q = urllib.parse.quote(args.prompt[:500])
+    seed = int(time.time()) % 1000000
+    poll_url = (
+        f"https://image.pollinations.ai/prompt/{prompt_q}"
+        f"?width={args.width}&height={args.height}&seed={seed}&model=flux&nologo=true"
+    )
+    # Primary: Pollinations (free, no key).
+    try:
+        async with httpx.AsyncClient(timeout=90) as client:
+            r = await client.get(poll_url)
+            if r.status_code == 200 and r.headers.get("content-type", "").startswith("image/"):
+                return ToolResult(
+                    ok=True,
+                    output=f"Image generated: {poll_url}",
+                    verification="Pollinations.ai, HTTP 200, image/*",
+                    artifacts={"image_url": poll_url},
+                )
+            log.warning("pollinations failed: HTTP %s", r.status_code)
+    except Exception as e:  # noqa: BLE001 — fallback handles it
+        log.warning("pollinations error: %s", e)
+
+    # Fallback: HuggingFace Inference (free tier, needs HF_TOKEN).
+    hf_token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_TOKEN")
+    if hf_token:
+        try:
+            async with httpx.AsyncClient(timeout=120) as client:
+                r = await client.post(
+                    "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell",
+                    headers={"Authorization": f"Bearer {hf_token}"},
+                    json={"inputs": args.prompt[:500]},
+                )
+                if r.status_code == 200 and r.headers.get("content-type", "").startswith("image/"):
+                    # Save to workspace shots dir so the UI can serve it.
+                    shots = Path(os.environ.get("ACTLET_WORKSPACE", ".")) / "shots"
+                    shots.mkdir(parents=True, exist_ok=True)
+                    fname = f"gen-{seed}.jpg"
+                    (shots / fname).write_bytes(r.content)
+                    return ToolResult(
+                        ok=True,
+                        output=f"Image generated via HuggingFace: shots/{fname}",
+                        verification="HuggingFace FLUX.1-schnell, HTTP 200",
+                        artifacts={"image_url": f"/api/shots/{fname}"},
+                    )
+                log.warning("huggingface failed: HTTP %s", r.status_code)
+        except Exception as e:  # noqa: BLE001
+            log.warning("huggingface error: %s", e)
+
+    return ToolResult(
+        ok=False,
+        output=(
+            "Image generation unavailable right now: Pollinations.ai didn't respond "
+            "and no HF_TOKEN is configured for the HuggingFace fallback. "
+            "Set HF_TOKEN in .env (free at huggingface.co) and try again."
+        ),
+    )
+
+
 async def _web_fetch(args: _FetchArgs) -> ToolResult:
     if not args.url.startswith(("http://", "https://")):
         return ToolResult(ok=False, output="only http(s) URLs allowed")
@@ -415,6 +488,15 @@ def builtin_registry(workspace_dir: str | Path | None = None) -> ToolRegistry:
         )
     )
     reg.register(Tool("web_fetch", "Fetch a web page as text (read-only)", _FetchArgs, _web_fetch))
+    reg.register(
+        Tool(
+            "generate_image",
+            "Generate an image from a text prompt (free via Pollinations.ai, "
+            "HuggingFace fallback). Returns an image URL.",
+            _ImageArgs,
+            _generate_image,
+        )
+    )
     reg.register(
         Tool(
             "shell",

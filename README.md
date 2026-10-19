@@ -37,9 +37,11 @@ Twenty personal-agent projects were researched live before a line of architectur
 - 📅 **Schedule** — "every morning at 8" → recurring agent tasks with missed-run replay, quiet hours, and one-tap pause
 - 🌙 **Learn** — nightly dreaming consolidation + reusable skills you can export and share
 - 🌐 **Browse** — real Chromium with scoped navigation, 16 approval-gated tools, tab management, screenshots at every step
+- 🎨 **Create** — generate images from text (free, no API key needed)
 - 📧 **Connect** — Telegram, Slack, Gmail (read/send), calendar (CalDAV), and any MCP server
 - 👥 **Delegate** — specialist sub-agents (researcher, coder, browser operator, communicator) with restricted toolsets
 - 🛡️ **Stay safe** — prompt-injection evals, workspace checkpoints with one-click revert, Docker sandbox for shell
+- 🔍 **Think twice** — every plan is reviewed by a critic model before execution; bad plans get rewritten, not run
 
 ## Who this is NOT for
 

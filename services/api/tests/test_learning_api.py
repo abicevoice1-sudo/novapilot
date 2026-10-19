@@ -111,7 +111,7 @@ def test_skills_crud(client):
 
 def test_dreaming_run_stores_facts(client):
     c, scripts = client
-    scripts.scripts = [_plan(("say hi", "echo_tool", {"text": "hello"})), "done"]
+    scripts.scripts = [_plan(("say hi", "echo_tool", {"text": "hello"})), _json.dumps({"approved": True}), "done"]
     task_id = c.post("/api/tasks", json={"goal": "greet Syed warmly"}).json()["id"]
     assert _wait_task(c, task_id) == "completed"
 
@@ -134,7 +134,7 @@ def test_dreaming_run_stores_facts(client):
 
 def test_make_skill_from_task(client):
     c, scripts = client
-    scripts.scripts = [_plan(("say hi", "echo_tool", {"text": "hello"})), "done"]
+    scripts.scripts = [_plan(("say hi", "echo_tool", {"text": "hello"})), _json.dumps({"approved": True}), "done"]
     task_id = c.post("/api/tasks", json={"goal": "greet people"}).json()["id"]
     assert _wait_task(c, task_id) == "completed"
 
@@ -156,7 +156,7 @@ def test_make_skill_from_task(client):
 
 def test_make_skill_rejects_incomplete(client):
     c, scripts = client
-    scripts.scripts = [_plan(("say hi", "echo_tool", {"text": "x"})), "done"]
+    scripts.scripts = [_plan(("say hi", "echo_tool", {"text": "x"})), _json.dumps({"approved": True}), "done"]
     c.post("/api/tasks", json={"goal": "quick"})
     # task still running (or at least not completed yet) -> try a missing task
     assert c.post("/api/tasks/doesnotexist/make-skill").status_code == 404

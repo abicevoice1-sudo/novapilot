@@ -62,6 +62,7 @@ async def test_full_run_to_completion():
     gw = ScriptedGateway(
         scripts=[
             _plan_json([("say one", "echo_tool", {"text": "one"}), ("say two", "echo_tool", {"text": "two"})]),
+            json.dumps({"approved": True}),
             "All done.",
         ]
     )
@@ -85,7 +86,7 @@ async def test_invalid_plan_fails_cleanly():
 
 
 async def test_approval_interrupt_and_resume_approved():
-    gw = ScriptedGateway(scripts=[_plan_json([("do danger", "danger_tool", {})]), "done"])
+    gw = ScriptedGateway(scripts=[_plan_json([("do danger", "danger_tool", {})]), json.dumps({"approved": True}), "done"])
     events = []
     control: dict = {}
     graph = build_graph(_registry(), checkpointer=InMemorySaver())
@@ -102,7 +103,7 @@ async def test_approval_interrupt_and_resume_approved():
 
 
 async def test_approval_rejected_skips_step():
-    gw = ScriptedGateway(scripts=[_plan_json([("do danger", "danger_tool", {})]), "done-ish"])
+    gw = ScriptedGateway(scripts=[_plan_json([("do danger", "danger_tool", {})]), json.dumps({"approved": True}), "done-ish"])
     control: dict = {}
     graph = build_graph(_registry(), checkpointer=InMemorySaver())
     cfg = _config(gw, control=control)
@@ -149,7 +150,7 @@ async def test_planner_survives_broken_skills_provider():
     def bad_provider(goal):
         raise RuntimeError("boom")
 
-    gw = ScriptedGateway(scripts=[_plan_json([("say hi", "echo_tool", {"text": "hi"})]), "done"])
+    gw = ScriptedGateway(scripts=[_plan_json([("say hi", "echo_tool", {"text": "hi"})]), json.dumps({"approved": True}), "done"])
     graph = build_graph(_registry(), checkpointer=InMemorySaver(), skills_provider=bad_provider)
     result = await graph.ainvoke({"goal": "x"}, _config(gw))
     assert result["status"] == "completed"

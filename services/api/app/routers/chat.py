@@ -61,6 +61,11 @@ async def chat(
     payload = [{"role": m.role, "content": m.content} for m in req.messages]
     conv_id = conv.id
 
+    # Compress long conversations so old turns don't drown the context window.
+    if len(payload) > 22:
+        from .memories import compress_conversation as _compress
+        payload = _compress(payload)
+
     # Recall: inject relevant long-term memories so Actlet remembers last week.
     # Best-effort — chat works fine if memory is unavailable.
     try:
