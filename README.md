@@ -1,11 +1,13 @@
-# ⚡ Actlet — the little actor that does your tasks
+# ⚡ Actlet — the AI agent that can't go rogue
 
-**Your personal AI agent: it remembers, plans, executes, and keeps working while you're away — with your approval on everything that matters.**
+**Every AI agent will click, write, send, and spend without asking you. Actlet literally cannot — every consequential action needs your explicit approval, enforced in code, not in prompts.**
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/)
 [![Version](https://img.shields.io/badge/version-v0.9.0-brightgreen.svg)](https://github.com/hydope/actlet/releases)
 [![Tests](https://img.shields.io/badge/tests-205%2B%20green-brightgreen.svg)](#verification)
+
+https://github.com/hydope/actlet/releases/download/v0.9.0/actlet-promo.mp4
 
 ## One command. Zero to running.
 
@@ -19,7 +21,7 @@ That's it. It installs everything, generates your secure token, starts the serve
 
 ## Why Actlet
 
-Twenty personal-agent projects were researched live before a line of architecture was drawn ([research/competitor-matrix.md](research/competitor-matrix.md)). Nobody clears 8/10. Actlet is built to fill the gaps they all leave:
+Twenty personal-agent projects were researched live before a line of architecture was drawn ([research/competitor-matrix.md](research/competitor-matrix.md)). Nobody clears 8/10 — including us. Here's what we do differently:
 
 | What Actlet does | Why it matters |
 |---|---|
@@ -27,7 +29,7 @@ Twenty personal-agent projects were researched live before a line of architectur
 | **Memory you can read, edit, and delete** | Local-first, full-text searchable, exportable. It even dreams: nightly consolidation turns your task history into durable knowledge. |
 | **Per-task budgets, enforced** | Cost, token, and time caps per task with automatic provider fallback. You'll never wake up to a surprise bill. |
 | **A real web UI** | Chat, tasks, schedules, skills, memory, browser screenshots — every serious contender is CLI-first. |
-| **Honesty as a feature** | Verified-vs-planned labeling everywhere. We publish what works, what doesn't, and what's untested. |
+| **Honesty as a feature** | Verified-vs-planned labeling everywhere. We publish what works, what doesn't, and what's untested — including where we lose. |
 
 ## What it can do
 
@@ -38,6 +40,13 @@ Twenty personal-agent projects were researched live before a line of architectur
 - 📧 **Connect** — Telegram, Slack, Gmail (read/send), calendar (CalDAV), and any MCP server
 - 👥 **Delegate** — specialist sub-agents (researcher, coder, browser operator, communicator) with restricted toolsets
 - 🛡️ **Stay safe** — prompt-injection evals, workspace checkpoints with one-click revert, Docker sandbox for shell
+
+## Who this is NOT for
+
+- You want a coding agent (try OpenHands, SWE-agent, or Cursor)
+- You want a hosted service with zero setup (we're self-hosted by design)
+- You want the agent to act without asking (that's the opposite of our safety model)
+- You need a mobile app (we're desktop web UI only, for now)
 
 ## Quickstart
 
@@ -63,24 +72,26 @@ Full guide: [docs/setup.md](docs/setup.md).
        │                    │            └─────────────┘
        │            ┌───────┴────────┐          │
        │            │ Channels     │    ┌─────┴──────┐
-       └───────────▶│ TG/Gmail/MCP │    │  LiteLLM   │
-                    └──────────────┘    │  gateway   │
+       └───────────▶│ TG/Slack/    │    │  LiteLLM   │
+                    │ Gmail/MCP    │    │  12 free   │
+                    └──────────────┘    │ providers  │
                                         └────────────┘
 ```
 
-**Stack:** Python 3.12 + FastAPI · LangGraph · LiteLLM (Ollama default, free-tier fallbacks) · SQLite+FTS5 → Postgres · React 18 + Vite + Tailwind · Playwright. See [docs/architecture.md](docs/architecture.md) and the 10 ADRs in [research/architecture-decisions.md](research/architecture-decisions.md).
+**Stack:** Python 3.12 + FastAPI · LangGraph · LiteLLM (Ollama default, 12 free providers) · SQLite+FTS5 → Postgres · React 18 + Vite + Tailwind · Playwright. See [docs/architecture.md](docs/architecture.md) and the 10 ADRs in [research/architecture-decisions.md](research/architecture-decisions.md).
 
 ## Verification
 
 We don't claim what we can't prove:
 
 - **205 tests green** across 12 packages + API (`pytest`), ruff clean, web build green
+- **16 security issues fixed** from an independent audit (shell hardening, SSRF protection, workspace isolation, approval race, and more)
 - **Live-verified flows:** scheduler fired real tasks · dreaming stored real facts · MCP served a real task · browser ran a real Chromium flow (5 approvals, 4 screenshots) · checkpoints reverted real files
 - **Honestly labeled limits:** Docker sandbox and mem0 backend are code-complete but untested against real Docker/mem0 in CI — marked as such in [docs/roadmap.md](docs/roadmap.md)
 
 ## Cost
 
-**$0 by default.** Local Ollama inference, free-tier cloud fallbacks (Groq → Gemini → OpenRouter), local-first everything. See [docs/cost-model.md](docs/cost-model.md) for verified quotas.
+**$0 by default.** Local Ollama inference, 12 free cloud providers (Groq, Gemini, Cerebras, Mistral, NVIDIA, and more). See [docs/free-providers.md](docs/free-providers.md) for the full verified list.
 
 ## Security
 

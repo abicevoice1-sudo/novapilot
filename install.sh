@@ -52,7 +52,7 @@ PIP="$VENV/bin/pip"
 # NOTE: no --no-deps. Every package declares its dependencies in pyproject.toml;
 # pip resolves them. If this fails, the install fails loudly — a half-installed
 # Actlet that crashes on startup is worse than no install.
-echo "==> Installing Actlet packages"
+echo "==> Installing Actlet packages (this takes 2-5 minutes, please wait...)"
 "$PIP" install -e ./packages/model-gateway -e ./packages/agent-core \
   -e ./packages/memory -e ./packages/scheduler -e ./packages/learning \
   -e ./packages/browser -e ./packages/channels -e ./packages/mcp \
@@ -61,13 +61,13 @@ echo "    done"
 
 # --- Playwright Chromium ---
 if [ "${ACTLET_SKIP_BROWSERS:-0}" != "1" ]; then
-  echo "==> Installing Playwright Chromium"
+  echo "==> Installing Playwright Chromium (~150MB download, please wait...)"
   "$VENV/bin/playwright" install chromium 2>/dev/null \
     || echo "    WARNING: Chromium install failed — browser features need it."
 fi
 
 # --- Web UI ---
-echo "==> Building web UI"
+echo "==> Building web UI (npm install, takes 1-2 minutes...)"
 (cd apps/web && npm ci -q && npm run build -s)
 echo "    done"
 
