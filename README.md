@@ -4,8 +4,8 @@
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/)
-[![Version](https://img.shields.io/badge/version-v0.8.0-brightgreen.svg)](https://github.com/hydope/actlet/releases)
-[![Tests](https://img.shields.io/badge/tests-190%2B%20green-brightgreen.svg)](#verification)
+[![Version](https://img.shields.io/badge/version-v0.9.0-brightgreen.svg)](https://github.com/hydope/actlet/releases)
+[![Tests](https://img.shields.io/badge/tests-205%2B%20green-brightgreen.svg)](#verification)
 
 ## One command. Zero to running.
 
@@ -34,22 +34,24 @@ Twenty personal-agent projects were researched live before a line of architectur
 - 🧠 **Remember** — user-owned memory with redaction, dedup, export/import
 - 📅 **Schedule** — "every morning at 8" → recurring agent tasks with missed-run replay, quiet hours, and one-tap pause
 - 🌙 **Learn** — nightly dreaming consolidation + reusable skills you can export and share
-- 🌐 **Browse** — real Chromium with scoped navigation, 12 approval-gated tools, screenshots at every step
-- 📧 **Connect** — Telegram, Gmail (read/send), calendar (CalDAV), and any MCP server
+- 🌐 **Browse** — real Chromium with scoped navigation, 16 approval-gated tools, tab management, screenshots at every step
+- 📧 **Connect** — Telegram, Slack, Gmail (read/send), calendar (CalDAV), and any MCP server
 - 👥 **Delegate** — specialist sub-agents (researcher, coder, browser operator, communicator) with restricted toolsets
 - 🛡️ **Stay safe** — prompt-injection evals, workspace checkpoints with one-click revert, Docker sandbox for shell
 
 ## Quickstart
 
-```bash
-# One-line install (Python 3.12+, Node required)
-curl -fsSL https://raw.githubusercontent.com/hydope/actlet/master/install.sh | bash
+The one command above is the quickstart — it installs, starts, and opens the UI.
+If you prefer manual control:
 
-# Start (Ollama default — $0, no keys)
+```bash
+./install.sh --no-start   # install only
 .venv/bin/uvicorn app.main:app --app-dir services/api
 ```
 
-Open http://localhost:8000. Set `ACTLET_TOKEN` in `.env` to lock the API. Add `GMAIL_*`, `CALDAV_*`, or `TELEGRAM_BOT_TOKEN` to connect your accounts. Full guide: [docs/setup.md](docs/setup.md).
+Then open http://localhost:8000. Your `ACTLET_TOKEN` is auto-generated in `.env`.
+Add `GMAIL_*`, `CALDAV_*`, `TELEGRAM_BOT_TOKEN`, or `SLACK_*` to connect your accounts.
+Full guide: [docs/setup.md](docs/setup.md).
 
 ## Architecture
 
@@ -72,7 +74,7 @@ Open http://localhost:8000. Set `ACTLET_TOKEN` in `.env` to lock the API. Add `G
 
 We don't claim what we can't prove:
 
-- **170+ tests green** across 11 packages + API (`pytest`), ruff clean, web build green
+- **205 tests green** across 12 packages + API (`pytest`), ruff clean, web build green
 - **Live-verified flows:** scheduler fired real tasks · dreaming stored real facts · MCP served a real task · browser ran a real Chromium flow (5 approvals, 4 screenshots) · checkpoints reverted real files
 - **Honestly labeled limits:** Docker sandbox and mem0 backend are code-complete but untested against real Docker/mem0 in CI — marked as such in [docs/roadmap.md](docs/roadmap.md)
 
