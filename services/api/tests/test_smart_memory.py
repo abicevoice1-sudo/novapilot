@@ -21,9 +21,9 @@ def test_memory_context_empty():
 
 
 def test_memory_context_recency_boost():
-    from datetime import datetime, timedelta, timezone
-    recent = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
-    old = (datetime.now(timezone.utc) - timedelta(days=60)).isoformat()
+    from datetime import UTC, datetime, timedelta
+    recent = (datetime.now(UTC) - timedelta(days=1)).isoformat()
+    old = (datetime.now(UTC) - timedelta(days=60)).isoformat()
     hits = [
         {"content": "old fact", "score": 1.0, "created_at": old},
         {"content": "recent fact", "score": 0.9, "created_at": recent},
