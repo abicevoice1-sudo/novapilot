@@ -152,10 +152,10 @@ async def test_wait_for_needs_target(registry):
     assert result.ok is False
 
 
-def test_sixteen_browser_tools_registered(registry):
+def test_twenty_browser_tools_registered(registry):
     reg, _ = registry
     names = {s["name"] for s in reg.specs()}
-    assert len(names) == 16
+    assert len(names) == 20
     assert {"browser_scroll", "browser_hover", "browser_wait_for",
             "browser_tab_new", "browser_tab_list",
             "browser_tab_switch", "browser_tab_close"} <= names

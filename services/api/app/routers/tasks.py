@@ -20,6 +20,14 @@ TERMINAL_EVENTS = {"task_completed", "task_failed", "task_cancelled"}
 class CreateTaskRequest(BaseModel):
     goal: str = Field(min_length=1, max_length=20000)
     model: str | None = Field(default=None, max_length=200)
+    testing_mode: bool = Field(
+        default=False,
+        description=(
+            "Testing mode: auto-approve all browser_* tools so the agent tests "
+            "websites without stopping for approval. Scoped to BROWSER_ALLOWED_DOMAINS. "
+            "Dangerous non-browser tools (shell, send, delete) still require approval."
+        ),
+    )
 
 
 class ApproveRequest(BaseModel):
@@ -45,8 +53,16 @@ def _serialize(task: dict) -> dict:
 async def create_task(req: CreateTaskRequest):
     if not req.goal.strip():
         raise HTTPException(400, "goal is required")
-    task_id = await get_runner().create_task(req.goal.strip(), req.model)
-    return {"id": task_id, "status": "running"}
+    preapproved = None
+    if req.testing_mode:
+        # Testing mode: all browser tools auto-approved, scoped to allowed domains.
+        # Non-browser dangerous tools still require approval.
+        from actlet_browser.tools import BROWSER_TOOL_NAMES
+        preapproved = list(BROWSER_TOOL_NAMES)
+    task_id = await get_runner().create_task(
+        req.goal.strip(), req.model, preapproved_tools=preapproved
+    )
+    return {"id": task_id, "status": "running", "testing_mode": req.testing_mode}
 
 
 @router.get("/api/tasks", dependencies=[Depends(require_auth)])

@@ -77,6 +77,11 @@ class BrowserSession:
         self._active_tab: str | None = None
         self._tab_count = 0
         self._shot_count = 0
+        # Multi-browser: isolated contexts (separate cookies/storage).
+        # Each context has its own tab set. Default context = "main".
+        self._contexts: dict[str, dict] = {}
+        self._active_context: str | None = None
+        self._context_count = 0
 
     async def start(self) -> None:
         from playwright.async_api import async_playwright
@@ -97,7 +102,92 @@ class BrowserSession:
         self._tabs[tab_id] = page
         self._active_tab = tab_id
         self._page = page  # backwards-compat alias for the active tab
+        # Default context wraps the initial tab set.
+        self._context_count += 1
+        self._contexts["main"] = {"tabs": self._tabs, "active_tab": tab_id}
+        self._active_context = "main"
         log.info("browser session started (headless=%s)", self.headless)
+
+    async def context_new(self, name: str = "") -> dict:
+        """Create an isolated browser context (separate cookies, storage, login).
+
+        Use this to test as a different user, or run parallel browsers.
+        """
+        if self._browser is None:
+            raise BrowserError("browser not started")
+        ctx = await self._browser.new_context(viewport={"width": 1280, "height": 800})
+        page = await ctx.new_page()
+        self._context_count += 1
+        ctx_id = name or f"browser-{self._context_count}"
+        if ctx_id in self._contexts:
+            raise BrowserError(f"context already exists: {ctx_id}")
+        self._context_count += 1
+        tab_id = f"tab-{self._tab_count + 1}"
+        self._tab_count += 1
+        tabs = {tab_id: page}
+        self._contexts[ctx_id] = {"ctx": ctx, "tabs": tabs, "active_tab": tab_id}
+        # Switch to the new context.
+        self._active_context = ctx_id
+        self._tabs = tabs
+        self._active_tab = tab_id
+        self._page = page
+        shot = await self.screenshot(label=f"new browser {ctx_id}")
+        return {"context_id": ctx_id, "tab_id": tab_id, "shot": shot}
+
+    async def context_list(self) -> list[dict]:
+        out = []
+        for cid, c in self._contexts.items():
+            tabs = []
+            for tid, page in c["tabs"].items():
+                try:
+                    title = await page.title()
+                except Exception:  # noqa: BLE001
+                    title = ""
+                tabs.append({"tab_id": tid, "url": page.url, "title": title})
+            out.append({
+                "context_id": cid,
+                "active": cid == self._active_context,
+                "tabs": tabs,
+            })
+        return out
+
+    async def context_switch(self, context_id: str) -> dict:
+        if context_id not in self._contexts:
+            raise BrowserError(f"no such browser context: {context_id}")
+        c = self._contexts[context_id]
+        self._active_context = context_id
+        self._tabs = c["tabs"]
+        self._active_tab = c["active_tab"]
+        self._page = self._tabs[self._active_tab]
+        shot = await self.screenshot(label=f"switch browser {context_id}")
+        return {"context_id": context_id, "tab_id": self._active_tab, "url": self._page.url, "shot": shot}
+
+    async def context_close(self, context_id: str) -> dict:
+        if context_id not in self._contexts:
+            raise BrowserError(f"no such browser context: {context_id}")
+        if len(self._contexts) == 1:
+            raise BrowserError("cannot close the last browser context")
+        c = self._contexts.pop(context_id)
+        ctx = c.get("ctx")
+        if ctx is not None:
+            try:
+                await ctx.close()
+            except Exception:  # noqa: BLE001 — closing a dead context is fine
+                log.debug("context_close: context already closed")
+        else:
+            # Default "main" context: close its pages individually.
+            for page in c["tabs"].values():
+                try:
+                    await page.close()
+                except Exception:  # noqa: BLE001, S110
+                    pass
+        if self._active_context == context_id:
+            self._active_context = next(iter(self._contexts))
+            c2 = self._contexts[self._active_context]
+            self._tabs = c2["tabs"]
+            self._active_tab = c2["active_tab"]
+            self._page = self._tabs[self._active_tab]
+        return {"closed": context_id, "active": self._active_context}
 
     def _require_page(self):
         if self._active_tab is None or self._active_tab not in self._tabs:
@@ -161,6 +251,14 @@ class BrowserSession:
         return {"closed": tab_id, "active": self._active_tab}
 
     async def close(self) -> None:
+        for c in self._contexts.values():
+            ctx = c.get("ctx")
+            if ctx is not None:
+                try:
+                    await ctx.close()
+                except Exception:  # noqa: BLE001, S110
+                    pass
+        self._contexts.clear()
         if self._browser is not None:
             await self._browser.close()
             self._browser = None

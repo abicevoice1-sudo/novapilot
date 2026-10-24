@@ -36,7 +36,8 @@ Twenty personal-agent projects were researched live before a line of architectur
 - 🧠 **Remember** — user-owned memory with redaction, dedup, export/import
 - 📅 **Schedule** — "every morning at 8" → recurring agent tasks with missed-run replay, quiet hours, and one-tap pause
 - 🌙 **Learn** — nightly dreaming consolidation + reusable skills you can export and share
-- 🌐 **Browse** — real Chromium with scoped navigation, 16 approval-gated tools, tab management, screenshots at every step
+- 🌐 **Browse** — real Chromium with scoped navigation, 20 approval-gated tools, tabs, multiple isolated browsers, screenshots at every step
+- 🧪 **Test websites** — testing mode auto-approves browser tools so Actlet clicks, fills, and verifies like a real user without stopping for approval
 - 🎨 **Create** — generate images from text (free, no API key needed)
 - 📧 **Connect** — Telegram, Slack, Gmail (read/send), calendar (CalDAV), and any MCP server
 - 👥 **Delegate** — specialist sub-agents (researcher, coder, browser operator, communicator) with restricted toolsets

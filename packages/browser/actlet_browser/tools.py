@@ -18,6 +18,17 @@ APPROVAL_NOTE = (
 )
 
 
+# All browser tool names — used by testing mode for scoped auto-approval.
+BROWSER_TOOL_NAMES: tuple[str, ...] = (
+    "browser_open", "browser_snapshot", "browser_read", "browser_click",
+    "browser_fill", "browser_select", "browser_press", "browser_scroll",
+    "browser_hover", "browser_wait_for",
+    "browser_tab_new", "browser_tab_list", "browser_tab_switch", "browser_tab_close",
+    "browser_new", "browser_list", "browser_switch", "browser_close",
+    "browser_back", "browser_screenshot",
+)
+
+
 class _UrlArgs(BaseModel):
     url: str = Field(description="http(s) URL to open")
 
@@ -63,6 +74,14 @@ class _TabIdArgs(BaseModel):
 
 class _TabNewArgs(BaseModel):
     url: str = Field(default="", description="URL to open in the new tab (optional)")
+
+
+class _CtxNameArgs(BaseModel):
+    name: str = Field(default="", description="Name for the new browser (optional)")
+
+
+class _CtxIdArgs(BaseModel):
+    context_id: str = Field(description="Browser context ID from browser_list")
 
 
 class _NoArgs(BaseModel):
@@ -253,6 +272,50 @@ def register_browser_tools(registry, session_provider: Callable[[], Awaitable]) 
             return ToolResult(ok=False, output=str(e))
         return ToolResult(ok=True, output=f"Closed {out['closed']}; active is {out['active']}.")
 
+    async def browser_new(args: _CtxNameArgs) -> ToolResult:
+        s = await _session()
+        try:
+            out = await s.context_new(args.name)
+        except Exception as e:  # noqa: BLE001
+            return ToolResult(ok=False, output=str(e))
+        return ToolResult(
+            ok=True,
+            output=f"Opened new browser {out['context_id']} (tab {out['tab_id']}).",
+            verification=f"screenshot {out['shot']}",
+            artifacts=_shot_artifacts(out),
+        )
+
+    async def browser_list(args: _NoArgs) -> ToolResult:
+        s = await _session()
+        ctxs = await s.context_list()
+        lines = []
+        for c in ctxs:
+            lines.append(f"{'*' if c['active'] else ' '} browser {c['context_id']}:")
+            for t in c["tabs"]:
+                lines.append(f"    {t['tab_id']}: {t['title']!r} — {t['url']}")
+        return ToolResult(ok=True, output="\n".join(lines) or "(no browsers)")
+
+    async def browser_switch(args: _CtxIdArgs) -> ToolResult:
+        s = await _session()
+        try:
+            out = await s.context_switch(args.context_id)
+        except Exception as e:  # noqa: BLE001
+            return ToolResult(ok=False, output=str(e))
+        return ToolResult(
+            ok=True,
+            output=f"Switched to browser {out['context_id']} (tab {out['tab_id']}, {out['url']}).",
+            verification=f"screenshot {out['shot']}",
+            artifacts=_shot_artifacts(out),
+        )
+
+    async def browser_close(args: _CtxIdArgs) -> ToolResult:
+        s = await _session()
+        try:
+            out = await s.context_close(args.context_id)
+        except Exception as e:  # noqa: BLE001
+            return ToolResult(ok=False, output=str(e))
+        return ToolResult(ok=True, output=f"Closed browser {out['closed']}; active is {out['active']}.")
+
     tools = [
         ("browser_open", "Open a URL in the agent browser (scoped navigation).", _UrlArgs, browser_open),
         ("browser_snapshot", "List interactive elements (buttons, links, inputs) with CSS selectors to use in actions.", _NoArgs, browser_snapshot),
@@ -268,6 +331,10 @@ def register_browser_tools(registry, session_provider: Callable[[], Awaitable]) 
         ("browser_tab_list", "List open tabs with their URLs and titles.", _NoArgs, browser_tab_list),
         ("browser_tab_switch", "Switch to another tab.", _TabIdArgs, browser_tab_switch),
         ("browser_tab_close", "Close a tab (not the last one).", _TabIdArgs, browser_tab_close),
+        ("browser_new", "Open a new isolated browser (separate cookies/storage — test as a different user).", _CtxNameArgs, browser_new),
+        ("browser_list", "List all open browsers and their tabs.", _NoArgs, browser_list),
+        ("browser_switch", "Switch to another browser.", _CtxIdArgs, browser_switch),
+        ("browser_close", "Close a browser (not the last one).", _CtxIdArgs, browser_close),
         ("browser_back", "Go back one page in history.", _NoArgs, browser_back),
         ("browser_screenshot", "Take a screenshot of the current page.", _ShotArgs, browser_screenshot),
     ]
